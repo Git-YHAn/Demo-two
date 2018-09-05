@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerTempDao">
+	
+	<sql id="select">
+		select * from OPS_BASE_SERVER_TEMP
+	</sql>
+	
+	<insert id="inserTpl">
+		insert into OPS_BASE_SERVER_TEMP(TPL_NAME,TPL_TYPE,TPL_CONTENT,TPL_DESCRIPTION)
+		values(#{tplName},#{tplType},#{tplContent},#{tplDescription})
+	</insert>
+	
+	<!--根据id删除模板-->
+	<delete id="deleteTplById">
+		delete from OPS_BASE_SERVER_TEMP where TPL_ID = #{tplId}
+	</delete>
+	
+	<delete id="deleteTplByType">
+		delete from OPS_BASE_SERVER_TEMP where TPL_TYPE = #{tplType}
+	</delete>
+	
+	<select id="selectAll" resultType="com.bee.devops.admin.core.common.entity.ops.OpsBaseServerTemp">
+		<include refid="select"/>
+		<where>
+			<if test="tplName != null and tplName != ''">
+				TPL_NAME LIKE "%"#{tplName}"%"
+			</if>
+			<if test="tplType != null and tplType != ''">
+				AND TPL_TYPE LIKE "%"#{tplType}"%"
+			</if>
+		</where>
+	</select>
+
+	<!--根据模板id获取模板-->
+	<select id="getById" resultType="com.bee.devops.admin.core.common.entity.ops.OpsBaseServerTemp">
+		<include refid="select"/> where TPL_ID = #{tempId}
+	</select>
+
+	<select id="selectById" resultType="com.bee.devops.admin.core.common.entity.ops.OpsBaseServerTemp">
+		select * from OPS_BASE_SERVER_TEMP
+		<where>
+			<foreach collection="array" item="element" separator="or">
+				(TPL_ID = #{element})
+			</foreach>
+		</where>
+	</select>
+
+	<select id="selectByType" resultType="com.bee.devops.admin.core.common.entity.ops.OpsBaseServerTemp">
+		<include refid="select"/> where TPL_TYPE = #{tplType}
+	</select>
+	
+	<!--更新模板-->
+	<update id="upDate">
+		UPDATE OPS_BASE_SERVER_TEMP
+		<set>
+			<if test="tplName !=null">
+				TPL_NAME = #{tplName},
+			</if>
+			<if test="tplType !=null">
+				TPL_TYPE = #{tplType},
+			</if>
+			<if test="tplContent !=null">
+				TPL_CONTENT = #{tplContent},
+			</if>
+			<if test="tplDescription !=null">
+				TPL_DESCRIPTION = #{tplDescription},
+			</if>
+		</set>
+		WHERE TPL_ID = #{tplId}
+	</update>
+		
+</mapper>

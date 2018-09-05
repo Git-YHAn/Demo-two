@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseAppDao">
+    <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsBaseApp">
+        <id column="APP_ID" jdbcType="BIGINT" property="appId" />
+        <result column="PRO_ID" jdbcType="BIGINT" property="proId" />
+        <result column="PRO_NAME" jdbcType="VARCHAR" property="proName"/>
+        <result column="APP_NAME" jdbcType="VARCHAR" property="appName" />
+        <result column="APP_CODE" jdbcType="VARCHAR" property="appCode" />
+        <result column="APP_TYPE" jdbcType="INTEGER" property="appType" />
+        <result column="LOG_PATH" jdbcType="VARCHAR" property="logPath" />
+        <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="APP_GIT_URL" jdbcType="VARCHAR" property="appGitUrl" /> 
+        <result column="APP_TYPE_ID" jdbcType="BIGINT" property="appTypeId" />
+        <result column="APP_TYPE_NAME" jdbcType="VARCHAR" property="appTypeName"/>
+    </resultMap>
+    
+	<resultMap id="AppTypesMap" type="com.bee.devops.admin.core.common.entity.ops.OpsBaseAppType" >
+		<result column="APP_TYPE_ID" property="appTypeId" jdbcType="BIGINT"/>
+		<result column="APP_TYPE_NAME" property="appTypeName" jdbcType="VARCHAR"/>
+		<result column="SCRIPT_PATH" property="scriptPath" jdbcType="VARCHAR"/>
+		<result column="DEPLOY_PATH" property="deployPath" jdbcType="VARCHAR"/>
+	</resultMap>
+  
+    <select id="getAllApps" resultMap="BaseResultMap">
+        SELECT
+        *
+        FROM OPS_BASE_APP
+    </select>
+
+    <!--根据git路径获取应用-->
+    <select id="getAppByGitUrl" resultMap="BaseResultMap">
+        SELECT
+        A.*,
+        B.PRO_NAME
+        FROM OPS_BASE_APP A INNER JOIN OPS_BASE_PRO B ON A.PRO_ID = B.PRO_ID
+        WHERE APP_GIT_URL = #{gitUrl,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectByPrimaryKey"  resultMap="BaseResultMap">
+        select
+        *
+        from OPS_BASE_APP
+        where APP_ID = #{appId,jdbcType=INTEGER}
+    </select>
+    <select id="searchAppsByPro" resultMap="BaseResultMap">
+        select *
+        from  OPS_BASE_APP WHERE PRO_ID=#{proId}
+        <if test="keyWord != null">
+            AND (APP_NAME like '%${keyWord}%' OR APP_CODE like '%${keyWord}%' OR DESCRIPTION like '%${keyWord}%')
+        </if>
+        order by CREATE_TIME desc, UPDATE_TIME desc
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from OPS_BASE_APP
+        where APP_ID = #{id,jdbcType=INTEGER}
+    </delete>
+    <insert id="insertSelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseApp">
+        insert into OPS_BASE_APP
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="appId != null">
+                APP_ID,
+            </if>
+            <if test="proId != null">
+                PRO_ID,
+            </if>
+            <if test="appName != null">
+                APP_NAME,
+            </if>
+            <if test="appCode != null">
+                APP_CODE,
+            </if>
+            <if test="appType != null">
+                APP_TYPE,
+            </if>
+            <if test="appTypeId != null">
+                APP_TYPE_ID,
+            </if>
+            <if test="appTypeName != null">
+                APP_TYPE_NAME,
+            </if>
+            <if test="logPath != null">
+                LOG_PATH,
+            </if>
+            <if test="description != null">
+                DESCRIPTION,
+            </if>
+            <if test="createTime != null">
+                CREATE_TIME,
+            </if>
+            <if test="updateTime != null">
+                UPDATE_TIME,
+            </if>
+            <if test="appGitUrl != null">
+                APP_GIT_URL,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="appId != null">
+                #{appId,jdbcType=INTEGER},
+            </if>
+            <if test="proId != null">
+                #{proId,jdbcType=INTEGER},
+            </if>
+            <if test="appName != null">
+                #{appName,jdbcType=VARCHAR},
+            </if>
+            <if test="appCode != null">
+                #{appCode,jdbcType=VARCHAR},
+            </if>
+            <if test="appType != null">
+                #{appType,jdbcType=INTEGER},
+            </if>
+            <if test="appTypeId != null">
+                #{appTypeId,jdbcType=INTEGER},
+            </if>
+            <if test="appTypeName != null">
+                #{appTypeName,jdbcType=VARCHAR},
+            </if>
+            <if test="logPath != null">
+                #{logPath,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="appGitUrl != null">
+                #{appGitUrl,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseApp">
+        update OPS_BASE_APP
+        <set>
+            <if test="proId != null">
+                PRO_ID = #{proId,jdbcType=INTEGER},
+            </if>
+            <if test="appName != null">
+                APP_NAME = #{appName,jdbcType=VARCHAR},
+            </if>
+            <if test="appCode != null">
+                APP_CODE = #{appCode,jdbcType=VARCHAR},
+            </if>
+            <if test="appType != null">
+                APP_TYPE = #{appType,jdbcType=INTEGER},
+            </if>
+            <if test="appTypeId != null">
+                APP_TYPE_ID = #{appTypeId,jdbcType=INTEGER},
+            </if>
+            <if test="appTypeName != null">
+                APP_TYPE_NAME = #{appTypeName,jdbcType=VARCHAR},
+            </if>
+            <if test="logPath != null">
+                LOG_PATH = #{logPath,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                DESCRIPTION = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="appGitUrl != null">
+                APP_GIT_URL = #{appGitUrl,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where APP_ID = #{appId,jdbcType=INTEGER}
+    </update>
+    <select id="selectSelectiveApps" resultMap="BaseResultMap">
+        SELECT
+        da.APP_ID, da.PRO_ID, dp.PRO_NAME, da.APP_NAME, da.APP_CODE, da.APP_TYPE,
+        da.LOG_PATH, da.DESCRIPTION, da.CREATE_TIME, da.UPDATE_TIME, da.APP_GIT_URL
+        FROM OPS_BASE_APP da LEFT JOIN OPS_BASE_PRO dp ON da.PRO_ID = dp.PRO_ID WHERE 1=1
+        <if test="name != null">
+            AND APP_NAME LIKE "%"#{name}"%"
+        </if>
+        order by UPDATE_TIME desc,CREATE_TIME desc
+    </select>
+    <select id="selectAppByCode" resultType="int" >
+        select COUNT(*)  FROM OPS_BASE_APP WHERE APP_CODE = #{appCode}
+    </select>
+    <select id="getProAllAppsByName" resultMap="BaseResultMap">
+        SELECT *
+        FROM OPS_BASE_APP WHERE PRO_ID=#{proId}
+        <if test="appName != null">
+            AND APP_NAME LIKE "%"#{appName}"%"
+        </if>
+        order by UPDATE_TIME desc,CREATE_TIME desc
+    </select>
+
+    <select id="selectNotSetApp" resultMap="BaseResultMap">
+        SELECT
+        *
+        FROM OPS_BASE_APP da WHERE da.PRO_ID = #{proId}
+        <foreach collection="appIds"  index="index"  item="item" >
+            AND da.APP_ID != #{item}
+        </foreach>
+    </select>
+
+    <select id="selectEnvInProApp" resultMap="BaseResultMap">
+        SELECT DISTINCT da.APP_ID, da.PRO_ID, da.APP_NAME, da.APP_CODE, da.APP_TYPE, da.DESCRIPTION, da.CREATE_TIME, da.UPDATE_TIME, da.LOG_PATH, da.APP_GIT_URL
+        FROM OPS_ASSEMBLE_APP daer
+        LEFT JOIN OPS_BASE_APP da ON da.APP_ID = daer.APP_ID
+        LEFT JOIN OPS_BASE_PRO dp ON da.PRO_ID = dp.PRO_ID WHERE dp.PRO_ID=#{proId}
+        <if test="proId != null">
+            AND daer.ENV_ID=#{envId}
+        </if>
+        order by da.CREATE_TIME ASC
+    </select>
+
+    <select id="selectAppVerInApp" resultMap="BaseResultMap">
+	  	SELECT DISTINCT da.APP_ID, da.PRO_ID, da.APP_NAME, da.APP_CODE, da.APP_TYPE, da.DESCRIPTION, da.CREATE_TIME, da.LOG_PATH, da.APP_GIT_URL
+		FROM OPS_VERSION_APP ave
+		LEFT JOIN OPS_ASSEMBLE_APP daer ON daer.APP_ENV_ID = ave.APP_ENV_ID
+		LEFT JOIN OPS_BASE_APP da ON da.APP_ID = daer.APP_ID
+		LEFT JOIN OPS_BASE_PRO dp ON dp.PRO_ID = da.PRO_ID WHERE dp.PRO_ID=#{proId}
+  	</select>
+
+    <select id="selectAppIsExist" resultType="int">
+
+    </select>
+
+    <select id="queryAppCount" resultType="int">
+	  	SELECT COUNT(1) FROM OPS_BASE_APP 
+	</select>
+  
+	<select id="queryAppTypes" resultMap="AppTypesMap">
+		SELECT * FROM OPS_BASE_APP_TYPE
+	</select>
+
+    <select id="getExistedGitUrlCount" resultType="java.lang.Integer">
+        SELECT COUNT(APP_ID) FROM OPS_BASE_APP
+        WHERE APP_GIT_URL=#{gitUrl,jdbcType=VARCHAR}
+        <if test="appId != null">
+            AND APP_ID != #{appId,jdbcType=BIGINT}
+        </if>
+    </select>
+
+    <select id="getAppTypeId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT APP_TYPE_ID FROM OPS_BASE_APP WHERE APP_ID=#{appId,jdbcType=BIGINT}
+    </select>
+</mapper>

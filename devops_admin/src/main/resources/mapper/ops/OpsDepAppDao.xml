@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsDepAppDao">
+    <resultMap type="com.bee.devops.admin.core.common.entity.ops.OpsDepApp" id="BaseResultMap"> 
+        <result property="publishId" column="PUBLISH_ID" />
+		<result property="appEnvId" column="APP_ENV_ID" />
+		<result property="proId" column="PRO_ID" />
+		<result property="proName" column="PRO_NAME" />
+		<result property="envId" column="ENV_ID" />
+		<result property="envName" column="ENV_NAME" />
+		<result property="appId" column="APP_ID" />
+		<result property="appName" column="APP_NAME" />
+		<result property="deployVersionId" column="DEPLOY_VERSION_ID" />
+		<result property="deployVersionCode" column="DEPLOY_VERSION_CODE" />
+		<result property="publishStatus" column="PUBLISH_STATUS" />
+		<result property="autoRestart" column="AUTO_RESTART" />
+		<result property="serverId" column="SERVER_ID" />
+		<result property="serverName" column="SERVER_NAME" />
+		<result property="publishDate" column="PUBLISH_DATE" />
+		<result property="deployType" column="DEPLOY_TYPE" />
+		<result property="operateUserId" column="OPERATE_USER_ID" />
+
+		<result column="TAG_URL" property="tagUrl" jdbcType="VARCHAR"/>
+		<result column="DEPLOY_APP_GIT_URL" property="deployAppGitUrl" jdbcType="VARCHAR"/>
+		<result column="APP_VERSION_INFO" property="appVersionInfo" jdbcType="VARCHAR"/>
+		<result column="CONFIG_VERSION_INFO" property="configVersionInfo" jdbcType="VARCHAR"/>
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+		<result column="PUBLISH_INFO" property="publishInfo" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+	<resultMap type="com.bee.devops.admin.core.common.entity.ops.OpsDepApp" id="QueryResultMap">
+		<result property="appEnvId" column="APP_ENV_ID" />
+		<result property="publishStatus" column="PUBLISH_STATUS" />
+		<result property="autoRestart" column="AUTO_RESTART" />
+		<result property="proId" column="PRO_ID" />
+		<result property="proName" column="PRO_NAME" />
+		<result property="envId" column="ENV_ID" />
+		<result property="envName" column="ENV_NAME" />
+		<result property="appId" column="APP_ID" />
+		<result property="appName" column="APP_NAME" /> 
+		<association property="deployVersionId" column="APP_ENV_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDepDao.getMaxVersionId"/>
+        <collection property="deployAppVersions" column="APP_ENV_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsVersionApp" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDepDao.queryDeployAppVersionsByAppEnvId">
+        </collection>
+		<collection property="assetsHosts" column="APP_ENV_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsBaseServer" select="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerDao.selectHostsByPhy">
+		</collection>
+	</resultMap>
+	
+	<resultMap type="com.bee.devops.admin.core.vo.response.OpsDepAppResponse" id="QueryAppsResultMap">
+		<result property="appEnvId" column="APP_ENV_ID" />
+		<result property="appId" column="APP_ID" />
+		<result property="appName" column="APP_NAME" /> 
+        <collection property="versions" column="APP_ENV_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsVersionApp" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDepDao.queryDepAppVersByAppEnvId">
+        </collection>
+		<collection property="servers" column="APP_ENV_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsBaseServer" select="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerDao.selectHostsByPhy">
+		</collection>
+	</resultMap>
+
+	<resultMap type="com.bee.devops.admin.core.common.entity.ops.OpsDepApp" id="SelectResultMap">
+		<result property="appEnvId" column="APP_ENV_ID" />
+		<result property="publishStatus" column="PUBLISH_STATUS" />
+		<result property="autoRestart" column="AUTO_RESTART" />
+		<result property="proId" column="PRO_ID" />
+		<result property="proName" column="PRO_NAME" />
+		<result property="envId" column="ENV_ID" />
+		<result property="envName" column="ENV_NAME" />
+		<result property="appId" column="APP_ID" />
+		<result property="appName" column="APP_NAME" /> 
+		<association property="deployVersionId" column="APP_ENV_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDepDao.getMaxVersionId"/>
+        <collection property="deployAppVersions" column="APP_ENV_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsVersionApp" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDepDao.queryDeployAppVersionsByAppEnvId">
+        </collection>
+		<collection property="assetsHosts" column="APP_ENV_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsBaseServer" select="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerDao.selectHostsByCon">
+		</collection>
+	</resultMap>
+    <select id="getByPrimaryKey" resultMap="BaseResultMap">
+        SELECT A.*,B.*,C.ASSETS_NAME AS SERVER_NAME FROM OPS_DEP_APP A 
+        JOIN OPS_ASSEMBLE_APP B ON A.APP_ENV_ID=B.APP_ENV_ID 
+        JOIN OPS_BASE_SERVER C ON A.SERVER_ID=C.ASSETS_ID
+        WHERE PUBLISH_ID = #{publishId}
+    </select>
+
+	<select id="queryPublishApps" resultMap="QueryAppsResultMap">
+		SELECT A.APP_ENV_ID, A.APP_ID, A.APP_NAME
+		FROM OPS_ASSEMBLE_APP A 
+		WHERE A.PRO_ID=#{proId} AND A.ENV_ID=#{envId}
+		ORDER BY A.APP_NAME
+	</select>
+	
+	<select id="queryWaitPublishAppsByCon" resultMap="SelectResultMap">
+		SELECT A.*
+		FROM OPS_ASSEMBLE_APP A 
+		WHERE A.PRO_ID=#{proId} AND A.ENV_ID=#{envId}
+		ORDER BY A.APP_NAME
+	</select>
+
+	<delete id="delete">
+	    DELETE FROM OPS_DEP_APP WHERE PUBLISH_ID = #{publishId}
+	</delete>
+
+    <select id="queryPublishingApps" resultMap="BaseResultMap">
+        SELECT A.*,B.*,C.ASSETS_NAME AS SERVER_NAME FROM OPS_DEP_APP A 
+        JOIN OPS_ASSEMBLE_APP B ON A.APP_ENV_ID=B.APP_ENV_ID 
+        JOIN OPS_BASE_SERVER C ON A.SERVER_ID=C.ASSETS_ID
+        WHERE B.PRO_ID=#{proId} AND B.ENV_ID=#{envId}
+        ORDER BY B.APP_NAME,A.PUBLISH_ID
+    </select>
+
+	<!--获取常规发布的应用,同时返回应用发布版本的git地址及tagurl-->
+	<select id="queryPhyPublishingApps" resultMap="BaseResultMap">
+        SELECT A.*,B.*,C.ASSETS_NAME AS SERVER_NAME,ovad.DESCRIPTION,ova.DESCRIPTION APP_VERSION_INFO,ovc.DESCRIPTION CONFIG_VERSION_INFO,ovad.TAG_URL
+		FROM OPS_DEP_APP A
+        JOIN OPS_ASSEMBLE_APP B ON A.APP_ENV_ID=B.APP_ENV_ID 
+        JOIN OPS_BASE_SERVER C ON A.SERVER_ID=C.ASSETS_ID
+		LEFT JOIN OPS_VERSION_APP_DEP ovad on ovad.DEP_APP_VER_ID=A.DEPLOY_VERSION_ID
+		LEFT JOIN OPS_VERSION_APP ova on ova.APP_VER_ID=ovad.APP_VERSION_ID
+		LEFT JOIN OPS_VERSION_CONFIG ovc on ovc.CONFIG_VER_ID=ovad.CONFIG_VERSION_ID
+        WHERE B.PRO_ID=#{proId} AND B.ENV_ID=#{envId} AND A.DEPLOY_TYPE = 0
+        ORDER BY B.APP_NAME,A.PUBLISH_ID
+    </select>
+    
+    <select id="queryConPublishingApps" resultMap="BaseResultMap">
+        SELECT A.*,B.*,C.ASSETS_NAME AS SERVER_NAME FROM OPS_DEP_APP A 
+        JOIN OPS_ASSEMBLE_APP B ON A.APP_ENV_ID=B.APP_ENV_ID 
+        JOIN OPS_BASE_SERVER C ON A.SERVER_ID=C.ASSETS_ID
+        WHERE B.PRO_ID=#{proId} AND B.ENV_ID=#{envId} AND A.DEPLOY_TYPE = 2
+        ORDER BY B.APP_NAME,A.PUBLISH_ID
+    </select>
+    
+  <insert id="save" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsDepApp">
+    insert into OPS_DEP_APP ( DEPLOY_VERSION_ID, DEPLOY_VERSION_CODE, 
+      PUBLISH_STATUS, AUTO_RESTART, SERVER_ID, APP_ENV_ID, DEPLOY_TYPE, OPERATE_USER_ID, PUBLISH_INFO)
+    values ( #{deployVersionId,jdbcType=BIGINT}, #{deployVersionCode,jdbcType=VARCHAR}, 
+      #{publishStatus,jdbcType=INTEGER}, #{autoRestart,jdbcType=INTEGER}, #{serverId,jdbcType=BIGINT}, 
+      #{appEnvId,jdbcType=BIGINT},#{deployType,jdbcType=INTEGER},#{operateUserId,jdbcType=BIGINT},#{publishInfo,jdbcType=VARCHAR})
+  </insert>
+  
+  <select id="getAppByAppEnv" resultMap="BaseResultMap">
+    select * from OPS_DEP_APP WHERE APP_ENV_ID=#{appEnvId} AND SERVER_ID=#{serverId}
+  </select>
+  
+  <update id="updateStatus" >
+    UPDATE OPS_DEP_APP SET PUBLISH_STATUS=#{newStatus} WHERE PUBLISH_ID=#{publishId} AND PUBLISH_STATUS=#{oldStatus}
+  </update>
+  
+  <update id="updateDeployAppVersion">
+    UPDATE OPS_DEP_APP SET DEPLOY_VERSION_ID=#{versionId},DEPLOY_VERSION_CODE=#{versionCode} WHERE PUBLISH_ID=#{publishId}
+  </update>
+  
+   <update id="updatePublishDate">
+    UPDATE OPS_DEP_APP SET PUBLISH_DATE=#{publishDate} WHERE PUBLISH_ID=#{publishId}
+   </update>
+</mapper>

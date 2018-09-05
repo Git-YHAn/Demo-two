@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsDepAppOrderDao">
+  <resultMap id="OpsDepAppOrderDetailResultMap" type="com.bee.devops.admin.core.vo.response.OpsDepAppOrderDetailVo">
+    <id column="ORDER_ID" jdbcType="BIGINT" property="orderId" />
+    <result column="ORDER_TITLE" jdbcType="VARCHAR" property="orderTitle" />
+    <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createDate" />
+    <result column="ORDER_DETAILS" jdbcType="LONGVARCHAR" property="orderDetails" />
+    <result column="ORDER_STATUS" jdbcType="INTEGER" property="orderStatus" />
+    <association property="operateUserName" column="OPERATE_USER_ID" select="queryOperateUserNameByUserId"/>
+    <collection property="deployOrderInfos" column="ORDER_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsDepAppOrderInfo" select="com.bee.devops.admin.core.common.dao.ops.OpsDepAppOrderInfoDao.queryOrderInfosByOrderId"></collection>
+  </resultMap>
+  
+  <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsDepAppOrder">
+    <id column="ORDER_ID" jdbcType="BIGINT" property="orderId" />
+    <result column="ENV_ID" jdbcType="BIGINT" property="envId" />
+    <result column="PRO_ID" jdbcType="BIGINT" property="proId" />
+    <result column="ORDER_TITLE" jdbcType="VARCHAR" property="orderTitle" />
+    <result column="OPERATE_USER_ID" jdbcType="BIGINT" property="operateUserId" />
+    <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createDate" />
+    <result column="ORDER_DETAILS" jdbcType="LONGVARCHAR" property="orderDetails" />
+    <result column="ORDER_STATUS" jdbcType="INTEGER" property="orderStatus" />
+
+  </resultMap>
+  
+
+  <sql id="Base_Column_List">
+    ORDER_ID, ENV_ID, PRO_ID, ORDER_TITLE, OPERATE_USER_ID, CREATE_DATE, ORDER_STATUS, ORDER_DETAILS
+  </sql>
+  <select id="queryByOrderKey" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from OPS_DEP_APP_ORDER
+    where ORDER_ID = #{orderId,jdbcType=BIGINT}
+  </select>
+  
+  <select id="queryByOrderId" resultMap="OpsDepAppOrderDetailResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from OPS_DEP_APP_ORDER
+    where ORDER_ID = #{orderId,jdbcType=BIGINT}
+  </select>
+  
+  <select id="queryOperateUserNameByUserId" parameterType="java.lang.Long" resultType="java.lang.String">
+    SELECT REAL_NAME FROM ADMIN_USER
+    WHERE ADMIN_USER_ID = #{operateUserId,jdbcType=BIGINT}
+  </select>
+  
+  <select id="queryOrders" resultMap="OpsDepAppOrderDetailResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from OPS_DEP_APP_ORDER
+    where ENV_ID = #{envId,jdbcType=INTEGER} AND PRO_ID = #{proId,jdbcType=INTEGER} 
+    <if test="title != null">
+       AND ORDER_TITLE LIKE "%"#{title}"%"
+    </if>
+    ORDER BY CREATE_DATE DESC
+  </select>
+  <insert id="insertDepAppOrder" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsDepAppOrder" useGeneratedKeys="true" keyProperty="orderId">
+    insert into OPS_DEP_APP_ORDER
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="envId != null">
+        ENV_ID,
+      </if>
+      <if test="proId != null">
+        PRO_ID,
+      </if>
+      <if test="orderTitle != null">
+        ORDER_TITLE,
+      </if>
+      <if test="operateUserId != null">
+        OPERATE_USER_ID,
+      </if>
+      <if test="createDate != null">
+        CREATE_DATE,
+      </if>
+      <if test="orderStatus != null">
+      	ORDER_STATUS,
+      </if>
+      <if test="orderDetails != null">
+      	ORDER_DETAILS,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="envId != null">
+        #{envId,jdbcType=BIGINT},
+      </if>
+      <if test="proId != null">
+        #{proId,jdbcType=BIGINT},
+      </if>
+      <if test="orderTitle != null">
+        #{orderTitle,jdbcType=VARCHAR},
+      </if>
+      <if test="operateUserId != null">
+        #{operateUserId,jdbcType=BIGINT},
+      </if>
+      <if test="createDate != null">
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="orderStatus != null">
+        #{orderStatus,jdbcType=INTEGER},
+      </if>
+      <if test="orderDetails != null">
+        #{orderDetails,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateOrderStatus">
+    UPDATE OPS_DEP_APP_ORDER
+    SET ORDER_STATUS = #{orderStatus,jdbcType=INTEGER}
+    WHERE ORDER_ID = #{orderId,jdbcType=BIGINT}
+  </update>
+  <delete id="deleteOrderById" parameterType="java.lang.Long">
+        delete from OPS_DEP_APP_ORDER
+        where ORDER_ID = #{orderId,jdbcType=INTEGER}
+  </delete>
+</mapper>

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsAssembleAppDao">
+  <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.vo.response.AppServiceManagerVo">
+    <id column="APP_ENV_ID" jdbcType="BIGINT" property="appEnvId" />
+    <result column="APP_ID" jdbcType="BIGINT" property="appId" />
+    <result column="ENV_ID" jdbcType="BIGINT" property="envId" />
+    <result column="LABELS" jdbcType="VARCHAR" property="labels"/>
+    <result column="NAMESPACE" jdbcType="VARCHAR" property="namespace"/>
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="DEPLOY_VERSION_CODE" jdbcType="VARCHAR" property="currentVersion" />
+    <result column="CURRENT_CONTAIN" jdbcType="VARCHAR" property="currentContain"/>
+    <result column="CONFIG_GIT_URL" jdbcType="VARCHAR" property="configGitUrl" />
+    <result column="DEPLOY_APP_GIT_URL" jdbcType="VARCHAR" property="deployAppGitUrl" />
+    <result column="DEPLOY_APP_IMAGES_GIT_URL" jdbcType="VARCHAR" property="deployAppImagesGitUrl" />
+    <result column="PRO_ID" jdbcType="BIGINT" property="proId" />
+    <result column="APP_NAME" jdbcType="VARCHAR" property="appName"/>
+    <result column="APP_TYPE_ID" jdbcType="BIGINT" property="appTypeId"/>
+    <result column="APP_TYPE_NAME" jdbcType="VARCHAR" property="appTypeName"/>
+    <result column="PRO_NAME" jdbcType="VARCHAR" property="proName"/>
+    <result column="ENV_NAME" jdbcType="VARCHAR" property="envName"/>
+    <result column="MS_PORT" jdbcType="INTEGER" property="msPort"/>
+    <result column="MS_EUREKA_ADDR" jdbcType="VARCHAR" property="msEurekaAddress"/>
+    <result column="MS_PROFILE_TYPE_ID" jdbcType="VARCHAR" property="msProfileTypeId"/>
+    <result column="MS_ZONE_TYPE_ID" jdbcType="VARCHAR" property="msZoneTypeId"/>
+    <result column="MS_REGION_TYPE_ID" jdbcType="VARCHAR" property="msRegionTypeId"/>
+    <result column="MS_CONFIG_URL" jdbcType="VARCHAR" property="msConfigUrl"/>
+    <result column="UPLOAD_STATUS" jdbcType="INTEGER" property="uploadStatus"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+    APP_ENV_ID, APP_ID, ENV_ID, LABELS, NAMESPACE,CREATE_TIME, UPDATE_TIME, CURRENT_VERSION, CURRENT_CONTAIN, CONFIG_GIT_URL,
+    DEPLOY_APP_GIT_URL,PRO_ID,APP_NAME,PRO_NAME,ENV_NAME,DEPLOY_APP_IMAGES_GIT_URL,MS_PORT,MS_EUREKA_ADDR,MS_PROFILE_CODE,MS_ZONE_CODE,MS_REGION_CODE,MS_CONFIG_URL
+  </sql>
+
+  <resultMap id="AppVersionVoResultMap" type="com.bee.devops.admin.core.vo.response.AppEnvProCodeVo" >
+    <result column="ENV_CODE" property="envCode" jdbcType="VARCHAR"/>
+    <result column="PRO_CODE" property="proCode" jdbcType="VARCHAR"/>
+    <result column="APP_CODE" property="appCode" jdbcType="VARCHAR"/>
+  </resultMap>
+
+    <resultMap id="MSResultMap" type="com.bee.devops.admin.core.vo.response.AppServiceManagerVo" extends="BaseResultMap">
+        <result property="appTypeId" column="APP_TYPE_ID" jdbcType="BIGINT"/>
+        <result property="appTypeName" column="APP_TYPE_NAME" jdbcType="VARCHAR"/>
+        <association property="msProfileTypeName" column="MS_PROFILE_TYPE_ID"
+                     select="com.bee.devops.admin.core.common.dao.ops.OpsBaseProfileTypeDao.selectProfileTypeNameById">
+        </association>
+        <association property="msZoneTypeName" column="MS_ZONE_TYPE_ID"
+                     select="com.bee.devops.admin.core.common.dao.ops.OpsBaseZoneTypeDao.selectZoneTypeNameById"/>
+        <association property="msRegionTypeName" column="MS_REGION_TYPE_ID"
+                     select="com.bee.devops.admin.core.common.dao.ops.OpsBaseRegionTypeDao.selectRegionTypeNameById"/>
+    </resultMap>
+  
+  <select id="selectAllAppEnvs" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from OPS_ASSEMBLE_APP ORDER BY UPDATE_TIME DESC, CREATE_TIME DESC
+  </select>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="MSResultMap">
+    select OAA.*,MAX(ODAH.DEPLOY_VERSION_CODE) DEPLOY_VERSION_CODE,OBA.APP_TYPE_ID, OBA.APP_TYPE_NAME
+    from OPS_ASSEMBLE_APP OAA
+        LEFT JOIN OPS_BASE_APP OBA  ON OBA.APP_ID = OAA.APP_ID
+        LEFT JOIN OPS_DEP_APP_HIS ODAH ON ODAH.APP_ENV_ID = OAA.APP_ENV_ID
+    where OAA.APP_ENV_ID = #{appEnvId,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from OPS_ASSEMBLE_APP
+    where APP_ENV_ID = #{appEnvId,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsAssembleApp">
+    INSERT INTO OPS_ASSEMBLE_APP (APP_ENV_ID, APP_ID, ENV_ID, CREATE_TIME, UPDATE_TIME, CURRENT_VERSION, CURRENT_CONTAIN,
+           CONFIG_GIT_URL, DEPLOY_APP_GIT_URL, MS_PORT, MS_EUREKA_ADDR, MS_PROFILE_TYPE_ID, MS_ZONE_TYPE_ID, MS_REGION_TYPE_ID, MS_CONFIG_URL)
+    VALUES (#{appEnvId,jdbcType=INTEGER}, #{appId,jdbcType=INTEGER}, #{envId,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP},
+           #{updateTime,jdbcType=TIMESTAMP}, #{currentVersion,jdbcType=VARCHAR},#{currentContain,jdbcType=VARCHAR}, #{configGitUrl,jdbcType=VARCHAR},
+           #{deployAppGitUrl,jdbcType=VARCHAR},#{msPort,jdbcType=INTEGER}, #{msEurekaAddress,jdbcType=VARCHAR},
+          #{msProfileTypeId,jdbcType=BIGINT},#{msZoneTypeId,jdbcType=BIGINT}, #{msRegionTypeId,jdbcType=BIGINT}, #{msConfigUrl,jdbcType=VARCHAR}
+    )
+  </insert>
+  <insert id="insertSelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsAssembleApp">
+    insert into OPS_ASSEMBLE_APP
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="appEnvId != null">
+        APP_ENV_ID,
+      </if>
+      <if test="appId != null">
+        APP_ID,
+      </if>
+      <if test="envId != null">
+        ENV_ID,
+      </if>
+      <if test="proId != null">
+        PRO_ID,
+      </if>
+      <if test="appName != null">
+        APP_NAME,
+      </if>
+      <if test="envName != null">
+        ENV_NAME,
+      </if>
+      <if test="proName != null">
+        PRO_NAME,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME,
+      </if>
+      <if test="currentVersion != null">
+        CURRENT_VERSION,
+      </if>
+      <if test="configGitUrl != null">
+        CONFIG_GIT_URL,
+      </if>
+      <if test="deployAppGitUrl != null">
+        DEPLOY_APP_GIT_URL,
+      </if>
+      <if test="msPort != null">
+        MS_PORT,
+      </if>
+      <if test="msEurekaAddress != null">
+        MS_EUREKA_ADDR,
+      </if>
+      <if test="msProfileTypeId != null">
+        MS_PROFILE_TYPE_ID,
+      </if>
+      <if test="msZoneTypeId != null">
+        MS_ZONE_TYPE_ID,
+      </if>
+      <if test="msRegionTypeId != null">
+        MS_REGION_TYPE_ID,
+      </if>
+      <if test="msConfigUrl != null">
+        MS_CONFIG_URL,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="appEnvId != null">
+        #{appEnvId,jdbcType=INTEGER},
+      </if>
+      <if test="appId != null">
+        #{appId,jdbcType=INTEGER},
+      </if>
+      <if test="envId != null">
+        #{envId,jdbcType=INTEGER},
+      </if>
+      <if test="proId != null">
+        #{proId,jdbcType=INTEGER},
+      </if>
+      <if test="appName != null">
+        #{appName,jdbcType=VARCHAR},
+      </if>
+      <if test="envName != null">
+        #{envName,jdbcType=VARCHAR},
+      </if>
+      <if test="proName != null">
+        #{proName,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="currentVersion != null">
+        #{currentVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="configGitUrl != null">
+        #{configGitUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="deployAppGitUrl != null">
+        #{deployAppGitUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="msPort != null">
+        #{msPort,jdbcType=INTEGER},
+      </if>
+      <if test="msEurekaAddress != null">
+        #{msEurekaAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="msProfileTypeId != null">
+        #{msProfileTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="msZoneTypeId != null">
+        #{msZoneTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="msRegionTypeId != null">
+        #{msRegionTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="msConfigUrl != null">
+        #{msConfigUrl,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsAssembleApp">
+    update OPS_ASSEMBLE_APP
+    <set>
+      <if test="appId != null">
+        APP_ID = #{appId,jdbcType=INTEGER},
+      </if>
+      <if test="envId != null">
+        ENV_ID = #{envId,jdbcType=INTEGER},
+      </if>
+      <if test="labels != null">
+        LABELS = #{labels,jdbcType=VARCHAR},
+      </if>
+      <if test="namespace != null">
+        NAMESPACE = #{namespace,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="currentVersion != null">
+        CURRENT_VERSION = #{currentVersion,jdbcType=VARCHAR},
+      </if>
+      <if test="configGitUrl != null">
+        CONFIG_GIT_URL = #{configGitUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="deployAppGitUrl != null">
+        DEPLOY_APP_GIT_URL = #{deployAppGitUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="deployAppImagesGitUrl != null">
+        DEPLOY_APP_IMAGES_GIT_URL = #{deployAppImagesGitUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="msPort != null">
+        MS_PORT = #{msPort,jdbcType=INTEGER},
+      </if>
+      <if test="msEurekaAddress != null">
+        MS_EUREKA_ADDR = #{msEurekaAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="msProfileTypeId != null">
+        MS_PROFILE_TYPE_ID = #{msProfileTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="msZoneTypeId != null">
+        MS_ZONE_TYPE_ID = #{msZoneTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="msRegionTypeId != null">
+        MS_REGION_TYPE_ID = #{msRegionTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="msConfigUrl != null">
+        MS_CONFIG_URL = #{msConfigUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="uploadStatus != null">
+        UPLOAD_STATUS = #{uploadStatus,jdbcType=INTEGER},
+      </if>
+    </set>
+    where APP_ENV_ID = #{appEnvId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsAssembleApp">
+    update OPS_ASSEMBLE_APP
+    set APP_ID = #{appId,jdbcType=INTEGER},
+    ENV_ID = #{envId,jdbcType=INTEGER},
+    CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+    UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+    CURRENT_VERSION = #{currentVersion,jdbcType=VARCHAR},
+    CONFIG_GIT_URL = #{configGitUrl,jdbcType=VARCHAR},
+    DEPLOY_APP_GIT_URL = #{deployAppGitUrl,jdbcType=VARCHAR},
+    MS_PORT = #{msPort,jdbcType=INTEGER},
+    MS_EUREKA_ADDR = #{msEurekaAddress,jdbcType=VARCHAR},
+    MS_PROFILE_TYPE_ID = #{msProfileCode,jdbcType=BIGINT},
+    MS_ZONE_TYPE_ID = #{msZoneCode,jdbcType=BIGINT},
+    MS_REGION_TYPE_ID= #{msRegionCode,jdbcType=BIGINT},
+    MS_CONFIG_URL = #{msConfigUrl,jdbcType=VARCHAR}
+    where APP_ENV_ID = #{appEnvId,jdbcType=INTEGER}
+  </update>
+  <select id="selectByEnvid" resultType="int">
+    select count(*) from OPS_ASSEMBLE_APP where ENV_ID =#{envId}
+  </select>
+  <select id="selectByEnvidAppid" resultType="int">
+    select count(*) from OPS_ASSEMBLE_APP where ENV_ID =#{envId} and APP_ID =#{appId}
+  </select>
+  <select id="selectByAppid" resultType="int">
+    select count(*) from OPS_ASSEMBLE_APP where APP_ID =#{appId}
+  </select>
+
+
+  <select id="selectAppEnvByAppid" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from OPS_ASSEMBLE_APP where APP_ID =#{appId} LIMIT 1
+  </select>
+
+  <select id="searchAppEnvs" resultMap="BaseResultMap" >
+    SELECT oaa.APP_ENV_ID,oaa.ENV_NAME,LABELS,oaa.NAMESPACE,oaa.ENV_ID,oaa.PRO_ID,PRO_NAME,oaa.APP_ID,oaa.APP_NAME,oba.APP_TYPE_ID,oba.APP_TYPE_NAME,
+    oaa.CURRENT_VERSION,oaa.CURRENT_CONTAIN,oaa.CONFIG_GIT_URL,oaa.DEPLOY_APP_GIT_URL,oaa.CREATE_TIME, oaa.UPDATE_TIME,
+    oaa.MS_PORT, oaa.MS_EUREKA_ADDR, oaa.MS_PROFILE_TYPE_ID, oaa.MS_ZONE_TYPE_ID, oaa.MS_REGION_TYPE_ID, oaa.MS_CONFIG_URL,oaa.UPLOAD_STATUS
+    from OPS_ASSEMBLE_APP oaa LEFT JOIN OPS_BASE_APP oba ON oaa.APP_ID = oba.APP_ID
+    WHERE oaa.ENV_ID = #{envId}	AND oaa.PRO_ID =#{proId}
+    <if test="appName != null">
+      AND oaa.APP_NAME like '%${appName}%'
+    </if>
+    ORDER BY oaa.UPDATE_TIME DESC,oaa.CREATE_TIME DESC
+  </select>
+
+  <select id="selectAppidByEnvid" resultType="Long">
+    SELECT a.APP_ID FROM OPS_ASSEMBLE_APP a WHERE ENV_ID = #{envId}
+  </select>
+
+  <select id="getAppEnv" resultMap="BaseResultMap">
+    select
+    *
+    from OPS_ASSEMBLE_APP where ENV_ID =#{envId} and APP_ID =#{appId}
+  </select>
+  <select id="getByappEnvId" resultMap="BaseResultMap">
+    select
+    *
+    from OPS_ASSEMBLE_APP where APP_ENV_ID =#{appEnvId}
+  </select>
+
+  <select id="getBygiturl" resultMap="BaseResultMap">
+  	select
+	*
+ 	from OPS_ASSEMBLE_APP where CONFIG_GIT_URL =#{giturl} or DEPLOY_APP_GIT_URL =#{giturl}
+  </select>
+
+  <update id="updateAppEnvByType">
+    update OPS_ASSEMBLE_APP
+    <trim prefix="SET">
+      <choose>
+        <when test="deployType != null and deployType == '1'.toString() ">
+          CURRENT_VERSION=#{currentVersion,jdbcType=VARCHAR}
+        </when>
+        <otherwise >
+          CURRENT_CONTAIN=#{currentVersion,jdbcType=VARCHAR}
+        </otherwise>
+      </choose>
+    </trim>
+    where APP_ENV_ID = #{appEnvId,jdbcType=INTEGER}
+  </update>
+  
+  <select id="getCodes" resultMap="AppVersionVoResultMap">
+    SELECT B.ENV_CODE, C.APP_CODE, D.PRO_CODE FROM OPS_ASSEMBLE_APP A
+        LEFT JOIN OPS_BASE_ENV B ON A.ENV_ID = B.ENV_ID
+        LEFT JOIN OPS_BASE_APP C ON A.APP_ID = C.APP_ID
+        LEFT JOIN OPS_BASE_PRO D ON A.PRO_ID = D.PRO_ID 
+    WHERE A.APP_ENV_ID = #{appEnvId}
+  </select>
+</mapper>

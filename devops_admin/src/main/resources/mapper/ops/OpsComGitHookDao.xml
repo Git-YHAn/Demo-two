@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsComGitHookDao">
+  <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.common.OpsComGitHook">
+    <id column="GIT_MSG_ID" jdbcType="BIGINT" property="gitMsgId" />
+    <result column="APP_ID" jdbcType="BIGINT" property="appId" />
+    <result column="ENV_ID" jdbcType="BIGINT" property="envId" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" /> 
+    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="MSG_TYPE" jdbcType="VARCHAR" property="msgType" />
+    <result column="MSG_STATUS" jdbcType="INTEGER" property="msgStatus" />
+    <result column="COMMITS_COUNT" jdbcType="INTEGER" property="commitsCount" />
+    <result column="APP_NAME" jdbcType="VARCHAR" property="appName"/>
+    <result column="PRO_NAME" jdbcType="VARCHAR" property="proName"/>
+    <result column="ENV_NAME" jdbcType="VARCHAR" property="envName"/>
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.bee.devops.admin.core.common.entity.common.OpsComGitHook">
+    <result column="COMMITS_CONTENT" jdbcType="LONGVARBINARY" property="commitsContent" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    GIT_MSG_ID, APP_ID, ENV_ID, CREATE_TIME, UPDATE_TIME, MSG_TYPE, MSG_STATUS, COMMITS_COUNT
+  </sql>
+  <sql id="Blob_Column_List">
+    COMMITS_CONTENT
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from OPS_COM_GIT_HOOK
+    where GIT_MSG_ID = #{gitMsgId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from OPS_COM_GIT_HOOK
+    where GIT_MSG_ID = #{gitMsgId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.bee.devops.admin.core.common.entity.common.OpsComGitHook">
+    insert into OPS_COM_GIT_HOOK (APP_ID, ENV_ID, 
+      CREATE_TIME, UPDATE_TIME, MSG_TYPE, 
+      MSG_STATUS, COMMITS_COUNT, COMMITS_CONTENT
+      )
+    values ( #{appId,jdbcType=INTEGER}, #{envId,jdbcType=INTEGER}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{msgType,jdbcType=VARCHAR}, 
+      #{msgStatus,jdbcType=INTEGER}, #{commitsCount,jdbcType=INTEGER}, #{commitsContent,jdbcType=LONGVARBINARY}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.bee.devops.admin.core.common.entity.common.OpsComGitHook">
+    insert into OPS_COM_GIT_HOOK
+    <trim prefix="(" suffix=")" suffixOverrides=",">     
+      <if test="appId != null">
+        APP_ID,
+      </if>
+      <if test="envId != null">
+        ENV_ID,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME,
+      </if>
+      <if test="msgType != null">
+        MSG_TYPE,
+      </if>
+      <if test="msgStatus != null">
+        MSG_STATUS,
+      </if>
+      <if test="commitsCount != null">
+        COMMITS_COUNT,
+      </if>
+      <if test="commitsContent != null">
+        COMMITS_CONTENT,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">    
+      <if test="appId != null">
+        #{appId,jdbcType=INTEGER},
+      </if>
+      <if test="envId != null">
+        #{envId,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="msgType != null">
+        #{msgType,jdbcType=VARCHAR},
+      </if>
+      <if test="msgStatus != null">
+        #{msgStatus,jdbcType=INTEGER},
+      </if>
+      <if test="commitsCount != null">
+        #{commitsCount,jdbcType=INTEGER},
+      </if>
+      <if test="commitsContent != null">
+        #{commitsContent,jdbcType=LONGVARBINARY},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bee.devops.admin.core.common.entity.common.OpsComGitHook">
+    update OPS_COM_GIT_HOOK
+    <set>
+      <if test="appId != null">
+        APP_ID = #{appId,jdbcType=INTEGER},
+      </if>
+      <if test="envId != null">
+        ENV_ID = #{envId,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="msgType != null">
+        MSG_TYPE = #{msgType,jdbcType=VARCHAR},
+      </if>
+      <if test="msgStatus != null">
+        MSG_STATUS = #{msgStatus,jdbcType=INTEGER},
+      </if>
+      <if test="commitsCount != null">
+        COMMITS_COUNT = #{commitsCount,jdbcType=INTEGER},
+      </if>
+      <if test="commitsContent != null">
+        COMMITS_CONTENT = #{commitsContent,jdbcType=LONGVARBINARY},
+      </if>
+    </set>
+    where GIT_MSG_ID = #{gitMsgId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.bee.devops.admin.core.common.entity.common.OpsComGitHook">
+    update OPS_COM_GIT_HOOK
+    set APP_ID = #{appId,jdbcType=INTEGER},
+      ENV_ID = #{envId,jdbcType=INTEGER},
+      CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      MSG_TYPE = #{msgType,jdbcType=VARCHAR},
+      MSG_STATUS = #{msgStatus,jdbcType=INTEGER},
+      COMMITS_COUNT = #{commitsCount,jdbcType=INTEGER},
+      COMMITS_CONTENT = #{commitsContent,jdbcType=LONGVARBINARY}
+    where GIT_MSG_ID = #{gitMsgId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bee.devops.admin.core.common.entity.common.OpsComGitHook">
+    update OPS_COM_GIT_HOOK
+    set APP_ID = #{appId,jdbcType=INTEGER},
+      ENV_ID = #{envId,jdbcType=INTEGER},
+      CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      MSG_TYPE = #{msgType,jdbcType=VARCHAR},
+      MSG_STATUS = #{msgStatus,jdbcType=INTEGER},
+      COMMITS_COUNT = #{commitsCount,jdbcType=INTEGER}
+    where GIT_MSG_ID = #{gitMsgId,jdbcType=INTEGER}
+  </update>
+   
+    <select id="queryByPageData" resultMap="BaseResultMap" >
+  	SELECT daer.GIT_MSG_ID,de.ENV_NAME,de.ENV_ID,dp.PRO_ID,dp.PRO_NAME,da.APP_ID,da.APP_NAME,
+	daer.MSG_TYPE,daer.MSG_STATUS,daer.COMMITS_COUNT,daer.COMMITS_CONTENT,daer.CREATE_TIME, daer.UPDATE_TIME
+	from OPS_COM_GIT_HOOK daer
+	LEFT JOIN OPS_BASE_ENV de ON daer.ENV_ID = de.ENV_ID
+	LEFT JOIN OPS_BASE_APP da ON daer.APP_ID = da.APP_ID
+	LEFT JOIN OPS_BASE_PRO dp ON da.PRO_ID = dp.PRO_ID
+	WHERE 1=1
+  	<if test="envId != null">
+		AND de.ENV_ID = #{envId} 
+  	</if>
+  	<if test="proId != null">
+		AND dp.PRO_ID =#{proId}
+  	</if>
+  	<if test="appId != null">
+		AND da.APP_ID =#{appId}
+  	</if>
+  	ORDER BY daer.UPDATE_TIME DESC,daer.CREATE_TIME DESC
+  </select>
+  
+</mapper>

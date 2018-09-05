@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppSyncDao">
+	<resultMap id="BaseResultMap"
+		type="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppSync">
+		<result column="SYNC_ID" jdbcType="BIGINT" property="syncId" />
+		<result column="OLD_ENV_ID" jdbcType="BIGINT" property="oldEnvId" />
+		<result column="OLD_ENV_NAME" jdbcType="VARCHAR" property="oldEnvName"/>
+		<result column="SYNC_ENV_ID" jdbcType="BIGINT" property="syncEnvId" />
+		<result column="SYNC_ENV_NAME" jdbcType="VARCHAR" property="syncEnvName"/>
+		<result column="SYNC_PRO_ID" jdbcType="BIGINT" property="syncProId"/>
+		<result column="SYNC_PRO_NAME" jdbcType="VARCHAR" property="syncProName"/>
+		<result column="SYNC_APP_ID" jdbcType="BIGINT" property="syncAppId" />
+		<result column="SYNC_APP_NAME" jdbcType="VARCHAR" property="syncAppName"/>
+		<result column="SYNC_VERSION_CODE" jdbcType="VARCHAR" property="syncVersionCode" />
+		<result column="OPERATE_USER_ID" jdbcType="BIGINT" property="operateUserId" />
+		<result column="REAL_NAME" jdbcType="VARCHAR" property="operateUserName"/>
+		<result column="SYNC_TIME" jdbcType="TIMESTAMP" property="syncTime" />
+		<result column="SYNC_FOLDER_NAME" jdbcType="VARCHAR"  property="syncFolderName" />
+	</resultMap>
+
+	<insert id="insertSelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppSync">
+		insert into OPS_VERSION_APP_SYNC (OLD_ENV_ID, SYNC_ENV_ID,
+		SYNC_APP_ID, SYNC_VERSION_CODE, OPERATE_USER_ID,SYNC_TIME, SYNC_FOLDER_NAME)
+		values (#{oldEnvId,jdbcType=INTEGER},#{syncEnvId,jdbcType=INTEGER},#{syncAppId,jdbcType=INTEGER}, 
+		#{syncVersionCode,jdbcType=VARCHAR}, #{operateUserId,jdbcType=INTEGER},
+		#{syncTime,jdbcType=TIMESTAMP}, #{syncFolderName,jdbcType=VARCHAR})
+	</insert>
+	 
+	<select id="selectSelective" resultMap="BaseResultMap">
+		SELECT avs.SYNC_ID,de1.ENV_NAME OLD_ENV_NAME,de2.ENV_NAME SYNC_ENV_NAME,dp.PRO_NAME SYNC_PRO_NAME,
+		da.APP_name SYNC_APP_NAME,avs.SYNC_VERSION_CODE,au.REAL_NAME,avs.SYNC_TIME,avs.SYNC_FOLDER_NAME
+		from OPS_BASE_ENV de1,OPS_BASE_ENV de2, OPS_VERSION_APP_SYNC avs
+		LEFT JOIN OPS_BASE_APP da ON avs.SYNC_APP_ID = da.APP_ID
+		LEFT JOIN ADMIN_USER au ON avs.OPERATE_USER_ID = au.ADMIN_USER_ID
+		LEFT JOIN OPS_BASE_PRO dp ON dp.PRO_ID = da.PRO_ID
+		WHERE  avs.OLD_ENV_ID = de1.ENV_ID AND avs.SYNC_ENV_ID = de2.ENV_ID
+			AND de1.ENV_ID = #{envId}
+			AND dp.PRO_ID = #{proId}
+		<if test="appName != null">
+			AND da.APP_NAME LIKE '%${appName}%'
+		</if>
+		order by avs.SYNC_TIME desc
+	</select>
+ 
+ 	<select id="selectByKeyId" resultMap="BaseResultMap">
+ 		SELECT avs.SYNC_ID,de1.ENV_NAME OLD_ENV_NAME,de2.ENV_NAME SYNC_ENV_NAME,da.APP_name SYNC_APP_NAME,
+		avs.SYNC_VERSION_CODE,au.REAL_NAME,avs.SYNC_TIME,avs.SYNC_FOLDER_NAME
+		from OPS_BASE_ENV de1,OPS_BASE_ENV de2, OPS_VERSION_APP_SYNC avs
+		LEFT JOIN OPS_BASE_APP da ON avs.SYNC_APP_ID = da.APP_ID
+		LEFT JOIN ADMIN_USER au ON avs.OPERATE_USER_ID = au.ADMIN_USER_ID
+		LEFT JOIN OPS_BASE_PRO dp ON dp.PRO_ID = da.PRO_ID
+		WHERE  avs.OLD_ENV_ID = de1.ENV_ID AND avs.SYNC_ENV_ID = de2.ENV_ID AND avs.SYNC_ID = #{syncId}
+ 	</select>
+</mapper>

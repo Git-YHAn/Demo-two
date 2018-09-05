@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsSysLogDao">
+	<resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsSysLog">
+		<id column="RECORD_ID" jdbcType="BIGINT" property="recordId" />
+		<result column="USER_ID" jdbcType="BIGINT" property="userId" />
+		<result column="TYPE_ID" jdbcType="BIGINT" property="typeId" />
+		<result column="TYPE_NAME" jdbcType="VARCHAR" property="typeName" />
+		<result column="IS_ENABLE" jdbcType="INTEGER" property="isEnable" />
+		<result column="RECORD_TIME" jdbcType="TIMESTAMP" property="recordTime" />
+		<result column="OPERATION" jdbcType="VARCHAR" property="operation" />
+		<result column="IS_SUCCESS" jdbcType="INTEGER" property="isSuccess" />
+		<result column="DETAILS" jdbcType="VARCHAR" property="details" />
+	</resultMap>
+	
+	<insert id="insertLogRecord" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsSysLog" >
+		INSERT INTO OPS_SYS_LOG_RECORD
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="typeId != null">
+				TYPE_ID,
+			</if>
+			<if test="typeName != null">
+				TYPE_NAME,
+			</if>
+			<if test="userId != null">
+				USER_ID,
+			</if>
+			<if test="userName != null">
+				USER_NAME,
+			</if>
+			<if test="operation != null">
+				OPERATION,
+			</if>
+			<if test="details != null">
+				DETAILS,
+			</if>
+			<if test="isSuccess != null">
+				IS_SUCCESS,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="typeId != null">
+				#{typeId,jdbcType=BIGINT},
+			</if>
+			<if test="typeName != null">
+				#{typeName,jdbcType=VARCHAR},
+			</if>
+			<if test="userId != null">
+				#{userId,jdbcType=BIGINT},
+			</if>
+			<if test="userName != null">
+				#{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="operation != null">
+				#{operation,jdbcType=VARCHAR},
+			</if>
+			<if test="details != null">
+				#{details,jdbcType=VARCHAR},
+			</if>
+			<if test="isSuccess != null">
+				#{isSuccess,jdbcType=INTEGER},
+			</if>
+		</trim>
+	</insert>
+	
+	<select id="selectLogTypeByName" parameterType="String" resultType="Long">
+		SELECT TYPE_ID FROM OPS_SYS_LOG_TYPE WHERE TYPE_NAME = #{typeName}
+	</select>
+	
+	<select id="selectLogTypeById" parameterType="Long" resultType="com.bee.devops.admin.core.common.entity.ops.OpsSysLog">
+		SELECT * FROM OPS_SYS_LOG_TYPE WHERE TYPE_ID = #{typeId}
+	</select>
+	
+	<select id="selectLogType" resultType="com.bee.devops.admin.core.common.entity.ops.OpsSysLog">
+		SELECT TYPE_ID, TYPE_NAME, IS_ENABLE FROM OPS_SYS_LOG_TYPE
+	</select>
+	
+	<select id="selectLogRecordById" parameterType="Long" resultType="com.bee.devops.admin.core.common.entity.ops.OpsSysLog">
+		SELECT * FROM OPS_SYS_LOG_RECORD WHERE RECORED_ID = #{recordId}
+	</select>
+	
+	<select id="selectSysLogRecord" resultType="com.bee.devops.admin.core.common.entity.ops.OpsSysLog">
+		SELECT * from OPS_SYS_LOG_RECORD WHERE TYPE_ID = #{typeId}
+		<if test="searchName != null and searchName != ''">
+			AND (DETAILS LIKE "%"#{searchName}"%" OR OPERATION LIKE "%"#{searchName}"%")
+		</if>
+		<if test="startTime != null and startTime != ''">
+			AND RECORD_TIME > #{startTime} AND (#{endTime} > RECORD_TIME OR RECORD_TIME LIKE "%"#{endTime}"%")
+		</if>
+	</select>
+	
+	<insert id="insertLogType" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsSysLog" useGeneratedKeys="true" keyProperty="typeId">
+		INSERT INTO OPS_SYS_LOG_TYPE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="typeName != null">
+				TYPE_NAME,
+			</if>
+			<if test="isEnable != null">
+				IS_ENABLE,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="typeName != null">
+				#{typeName,jdbcType=VARCHAR},
+			</if>
+			<if test="isEnable != null">
+				#{isEnable,jdbcType=INTEGER},
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="updateSysLogTypeIsEnable">
+		UPDATE OPS_SYS_LOG_TYPE SET IS_ENABLE = #{status} WHERE TYPE_ID = #{typeId}
+	</update>
+</mapper>

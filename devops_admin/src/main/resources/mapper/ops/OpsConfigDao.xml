@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsConfigDao">
+	<resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsConfig">
+		<result property="recordId" column="RECORD_ID" />
+		<result property="recordStatus" column="RECORD_STATUS" />
+		<result property="appEnvId" column="APP_ENV_ID" />
+		<result property="branchName" column="BRANCH_NAME" />
+		<result property="editorId" column="EDITOR_ID" />
+		<result property="commitDate" column="COMMIT_DATE" />
+		<result property="commitMessage" column="COMMIT_MESSAGE" />
+		<result property="auditorId" column="AUDITOR_ID" />
+		<result property="auditDate" column="AUDIT_DATE" />
+		<result property="beginSha" column="BEGIN_SHA" />
+		<result property="endSha" column="END_SHA" />
+		<result property="appName" column="APP_NAME" />
+		<result property="proName" column="PRO_NAME"/>
+		<result property="envName" column="ENV_NAME"/>
+	</resultMap>
+
+	<insert id="addConfigRecord" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsConfig">
+		INSERT INTO 
+		OPS_CONFIG(RECORD_STATUS, APP_ENV_ID, BRANCH_NAME, EDITOR_ID, COMMIT_DATE, AUDITOR_ID,
+		AUDIT_DATE, BEGIN_SHA, END_SHA, EDITOR_NAME, AUDITOR_NAME)
+		VALUES
+		(#{recordStatus, jdbcType=INTEGER}, #{appEnvId, jdbcType=BIGINT}, #{branchName, jdbcType=VARCHAR}, #{editorId, jdbcType=BIGINT}, #{commitDate, jdbcType=TIMESTAMP}, #{auditorId, jdbcType=BIGINT}, #{auditDate, jdbcType=TIMESTAMP}, #{beginSha, jdbcType=VARCHAR},
+		#{endSha, jdbcType=VARCHAR}, #{editorName, jdbcType=VARCHAR}, #{auditorName, jdbcType=VARCHAR})
+	</insert>
+
+	<delete id="deleteRecord" parameterType="string">
+		DELETE FROM OPS_CONFIG WHERE BRANCH_NAME = #{branchName} AND RECORD_STATUS = 0
+	</delete>
+
+	<update id="updateConfigRecordStatus">
+		UPDATE OPS_CONFIG SET RECORD_STATUS = #{newStatus} WHERE RECORD_ID = #{recordId} AND RECORD_STATUS = #{oldStatus}
+	</update>
+
+	<update id="updateConfigRecord" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsConfig">
+		UPDATE OPS_CONFIG SET END_SHA = #{endSha}, COMMIT_DATE = #{commitDate} WHERE RECORD_ID = #{recordId}
+	</update>
+
+	<update id="updateAuditInfo" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsConfig">
+		UPDATE OPS_CONFIG SET AUDITOR_ID = #{auditorId}, AUDITOR_NAME = #{auditorName}, AUDIT_DATE = #{auditDate} WHERE RECORD_ID = #{recordId}
+	</update>
+	
+	<update id="updateConfigCommitMessage">
+		UPDATE OPS_CONFIG SET COMMIT_MESSAGE = #{commitMessage} WHERE RECORD_ID = #{recordId}
+	</update>
+
+	<!--查询配置审核记录,按提交时间倒序-->
+	<select id="queryConfigRecordsByUser" resultMap="BaseResultMap">
+		SELECT A.*,B.APP_NAME,B.PRO_NAME,B.ENV_NAME FROM OPS_CONFIG A join OPS_ASSEMBLE_APP B on A.APP_ENV_ID=B.APP_ENV_ID WHERE A.EDITOR_ID = #{userId}
+		AND B.PRO_ID=#{proId} AND B.ENV_ID=#{envId}  
+		<if test="appId != null">
+		  AND B.APP_ID = #{appId}
+		</if>
+		ORDER BY A.COMMIT_DATE DESC
+	</select>
+
+	<select id="queryConfigRecords" resultMap="BaseResultMap">
+		SELECT A.*,B.APP_NAME,B.PRO_NAME,B.ENV_NAME FROM OPS_CONFIG A join OPS_ASSEMBLE_APP B on A.APP_ENV_ID=B.APP_ENV_ID
+		WHERE B.PRO_ID=#{proId} AND B.ENV_ID=#{envId}  
+		<if test="appId != null">
+          AND B.APP_ID = #{appId}
+        </if>
+		ORDER BY A.RECORD_STATUS ASC,A.COMMIT_DATE DESC
+	</select>
+	
+	<select id="queryCommitConfigRecords" resultMap="BaseResultMap">
+		SELECT A.*,B.APP_NAME,B.PRO_NAME,B.ENV_NAME FROM OPS_CONFIG A join OPS_ASSEMBLE_APP B on A.APP_ENV_ID=B.APP_ENV_ID
+		WHERE B.PRO_ID=#{proId} AND B.ENV_ID=#{envId}  
+		<if test="appId != null">
+          AND B.APP_ID = #{appId}
+        </if>
+		AND A.RECORD_STATUS = 1 ORDER BY A.RECORD_STATUS ASC,A.COMMIT_DATE DESC
+	</select>
+
+	<select id="getConfigRecord" resultMap="BaseResultMap">
+		SELECT A.*,B.APP_NAME,B.PRO_NAME,B.ENV_NAME FROM OPS_CONFIG A join OPS_ASSEMBLE_APP B on A.APP_ENV_ID=B.APP_ENV_ID WHERE A.RECORD_ID = ${recordId}
+	</select>
+
+	<select id="getConfigRecordByAppBranch" resultMap="BaseResultMap">
+		SELECT A.*,B.APP_NAME,B.PRO_NAME,B.ENV_NAME FROM OPS_CONFIG A join OPS_ASSEMBLE_APP B on A.APP_ENV_ID=B.APP_ENV_ID WHERE A.APP_ENV_ID = #{appEnvId} AND A.BRANCH_NAME = #{branchName}
+	</select>
+</mapper>

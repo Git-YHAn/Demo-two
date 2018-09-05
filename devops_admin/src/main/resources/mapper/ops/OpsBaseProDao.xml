@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseProDao">
+  <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsBasePro">
+    <id column="PRO_ID" jdbcType="BIGINT" property="proId" />
+    <result column="PRO_NAME" jdbcType="VARCHAR" property="proName" />
+    <result column="PRO_CODE" jdbcType="VARCHAR" property="proCode" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="WEB_HOOK" jdbcType="VARCHAR" property="webHook" />
+    <result column="RESOURCE_ID" jdbcType="BIGINT" property="resourceId" />
+  </resultMap>
+  <select id="getServiceInfo" parameterType="java.lang.Long" resultType="map">
+  	select a.assets_id as assetsId, a.assets_name as assetsName, a.ssh_address as sshAddress,a.ssh_port as sshPort 
+	from OPS_BASE_ENV_SERVER h,OPS_BASE_SERVER a where h.app_env_id = #{appEvnId} and h.host_id = a.assets_id
+  </select>
+  <select id="getAppService" parameterType="map" resultType="map">
+  	select count(t.app_env_id) as service_num,t.app_env_id as app_env_id,t.app_id ,t.app_name as app_name from OPS_BASE_ENV_SERVER h,(select app_env_id as app_env_id,a.app_id ,b.app_name as app_name from OPS_ASSEMBLE_APP a ,OPS_BASE_APP b 
+			where b.pro_id = #{proId} and a.env_id = #{envId}  and a.app_id=b.app_id GROUP BY a.app_id) t 
+	where h.app_env_id = t.app_env_id GROUP BY t.app_env_id
+  </select>
+  <select id="getEnvNameList" parameterType="java.lang.Long" resultType="map">
+  	select e.env_id as envId,e.env_name as envName,e.description as description 
+  	from OPS_BASE_ENV e,(select env_id from OPS_BASE_APP a,OPS_ASSEMBLE_APP b 
+  					where a.pro_id = #{proId} and a.app_id=b.app_id GROUP BY b.env_id) t 
+	where e.env_id = t.env_id
+  </select>
+  <sql id="Base_Column_List">
+    PRO_ID, PRO_NAME, PRO_CODE, DESCRIPTION, CREATE_TIME, UPDATE_TIME, WEB_HOOK, RESOURCE_ID
+  </sql>
+  <select id="getAllProjects" resultMap="BaseResultMap">
+  	SELECT 
+  	<include refid="Base_Column_List"/>
+  	FROM OPS_BASE_PRO
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from OPS_BASE_PRO
+    where PRO_ID = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from OPS_BASE_PRO
+    where PRO_ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insertSelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBasePro" useGeneratedKeys="true" keyProperty="proId">
+    insert into OPS_BASE_PRO
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="proId != null">
+        PRO_ID,
+      </if>
+      <if test="proName != null">
+        PRO_NAME,
+      </if>
+      <if test="proCode != null">
+        PRO_CODE,
+      </if>
+      <if test="description != null">
+        DESCRIPTION,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME,
+      </if>
+      <if test="webHook != null">
+      	WEB_HOOK，
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="proId != null">
+        #{proId,jdbcType=INTEGER},
+      </if>
+      <if test="proName != null">
+        #{proName,jdbcType=VARCHAR},
+      </if>
+      <if test="proCode != null">
+        #{proCode,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="webHook != null">
+        #{webHook,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBasePro">
+    update OPS_BASE_PRO
+    <set>
+      <if test="proName != null">
+        PRO_NAME = #{proName,jdbcType=VARCHAR},
+      </if>
+      <if test="proCode != null">
+        PRO_CODE = #{proCode,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        DESCRIPTION = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+       <if test="webHook != null">
+        WEB_HOOK = #{webHook,jdbcType=VARCHAR},
+      </if>
+      <if test="resourceId != null">
+        RESOURCE_ID = #{resourceId,jdbcType=BIGINT},
+      </if>
+    </set>
+    where PRO_ID = #{proId,jdbcType=INTEGER}
+  </update>
+  <select id="selectByProjectCode"  resultType="int">
+  	select COUNT(*) FROM OPS_BASE_PRO WHERE PRO_CODE = #{proCode}
+  </select>
+  
+  <select id="selectSelectiveProjects" resultMap="BaseResultMap" parameterType="java.lang.String">
+  		select
+  		<include refid="Base_Column_List" />
+  		from OPS_BASE_PRO WHERE 1=1
+  		<if test="name != null">
+  			AND PRO_NAME LIKE "%"#{name}"%"
+  		</if>
+  		ORDER BY  UPDATE_TIME DESC,CREATE_TIME DESC
+  </select>
+  
+  <select id="selectProByEnvid" resultMap="BaseResultMap">
+      SELECT DISTINCT
+          OBP.PRO_ID,
+          OBP.PRO_NAME,
+          OBP.PRO_CODE,
+          OBP.DESCRIPTION,
+          OBP.CREATE_TIME,
+          OBP.UPDATE_TIME
+      FROM OPS_VERSION_APP OVA
+          LEFT JOIN OPS_ASSEMBLE_APP OAA ON OAA.APP_ID = OVA.APP_ID
+          LEFT JOIN OPS_BASE_PRO OBP ON OBP.PRO_ID = OAA.PRO_ID
+      WHERE OAA.ENV_ID = #{envId};
+  </select>
+  
+  <select id="selectByEnvid" resultMap="BaseResultMap">
+  	SELECT DISTINCT dp.PRO_ID, dp.PRO_NAME, dp.PRO_CODE, dp.DESCRIPTION, dp.CREATE_TIME, dp.UPDATE_TIME
+	FROM OPS_ASSEMBLE_APP daer
+	LEFT JOIN OPS_BASE_APP da ON da.APP_ID = daer.APP_ID
+	LEFT JOIN OPS_BASE_PRO dp ON dp.PRO_ID = da.PRO_ID WHERE daer.ENV_ID = #{envId}
+	ORDER BY dp.UPDATE_TIME DESC, dp.CREATE_TIME DESC
+  </select>
+  
+  <select id="getWebHookByProId" resultType="String">
+  	SELECT WEB_HOOK FROM OPS_BASE_PRO WHERE PRO_ID = #{proId}
+  </select>
+  
+  <select id="queryProjectCount" resultType="int">
+  	SELECT COUNT(*) FROM OPS_BASE_PRO
+  </select>
+</mapper>

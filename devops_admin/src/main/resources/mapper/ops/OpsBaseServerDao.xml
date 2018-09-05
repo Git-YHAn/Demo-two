@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerDao">
+
+	<resultMap type="com.bee.devops.admin.core.vo.request.DeployHostRequest" id="TempMaoMap">
+		<result property="assetsId" column="ASSETS_ID"/>
+		<result property="assetsTypeName" column="ASSETS_NAME"/>
+		<result property="sshAddress" column="SSH_ADDRESS"/>
+		<result property="sshPort" column="SSH_PORT"/>
+		<result property="outerIp" column="OUTER_IP"/>
+		<result property="innerIp" column="INNER_IP"/>
+		<result property="assetsName" column="ASSETS_NAME"/>
+		<result property="assetsStatus" column="ASSETS_STATUS"/>
+		<result property="assetsType" column="ASSETS_TYPE_ID"/>
+		<result property="hostAccount" column="HOST_ACCOUNT"/>
+		<result property="hostPassword" column="HOST_PASSWORD"/>
+	</resultMap>
+	
+	<resultMap type="com.bee.devops.admin.core.common.entity.ops.OpsBaseServerType" id="typeMap">
+		<result property="assetsType" column="ASSETS_TYPE_ID"/>
+		<result property="assetsTypeName" column="ASSETS_TYPE_NAME"/>
+	</resultMap>
+
+    <!--服务器使用情况-->
+	<resultMap type="com.bee.devops.admin.core.vo.response.ServerUseInfo" id="serverInfo">
+		<result property="used" column="USED"/>
+	</resultMap>
+
+	<resultMap type="com.bee.devops.admin.core.common.entity.ops.OpsBaseServer" id="DeployAssetsHostMap">
+		<result property="assetsId" column="ASSETS_ID"/>
+		<result property="assetsName" column="ASSETS_NAME"/>
+		<result property="assetsType" column="ASSETS_TYPE"/>
+		<result property="sshAddress" column="SSH_ADDRESS"/>
+		<result property="sshPort" column="SSH_PORT"/>
+		<result property="assetsStatus" column="ASSETS_STATUS"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="operateSystem" column="OPERATE_SYSTEM"/>
+		<result property="memory" column="MEMORY"/>
+		<result property="cpu" column="CPU"/>
+		<result property="disk" column="DISK"/>
+		<result property="outerIp" column="OUTER_IP"/>
+		<result property="innerIp" column="INNER_IP"/>
+		<result property="operateUserId" column="OPERATE_USER_ID"/>
+		<result property="hostAccount" column="HOST_ACCOUNT"/>
+		<result property="hostPassword" column="HOST_PASSWORD"/>
+	</resultMap>
+	
+	<resultMap type="com.bee.devops.admin.core.vo.response.DeployAssetsHostVo" id="AssetsHostVoMap">
+		<result property="assetsId" column="ASSETS_ID"/>
+		<result property="assetsName" column="ASSETS_NAME"/>
+		<result property="assetsType" column="ASSETS_TYPE"/>
+		<result property="sshAddress" column="SSH_ADDRESS"/>
+		<result property="sshPort" column="SSH_PORT"/>
+		<result property="assetsStatus" column="ASSETS_STATUS"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="operateSystem" column="OPERATE_SYSTEM"/>
+		<result property="memory" column="MEMORY"/>
+		<result property="cpu" column="CPU"/>
+		<result property="disk" column="DISK"/>
+		<result property="outerIp" column="OUTER_IP"/>
+		<result property="innerIp" column="INNER_IP"/>
+		<result property="operateUserId" column="OPERATE_USER_ID"/>
+		<result property="operateUserName" column="REAL_NAME"/>
+		<result property="assetsTypeName" column="ASSETS_TYPE_NAME"/>
+		<result property="versionCode" column="VERSION_CODE"/>
+		<result property="used" column="USED"/>
+		<result property="initialStatus" column="INITIAL_STATUS"/>
+		<result property="project" column="PRONAME"/>
+		<result property="env" column="ENVNAME"/>
+		<result property="application" column="APPNAME"/>
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		ASSETS_ID,ASSETS_NAME,ASSETS_TYPE,SSH_ADDRESS,SSH_PORT,ASSETS_STATUS,
+		CREATE_TIME,UPDATE_TIME,OPERATE_SYSTEM,MEMORY,CPU,DISK,OUTER_IP,INNER_IP,OPERATE_USER_ID,HOST_ACCOUNT,HOST_PASSWORD
+	</sql>
+	
+	<sql id="AssetsHostVo_Column">
+		ah.ASSETS_ID,ah.ASSETS_NAME,ah.ASSETS_TYPE,ah.SSH_ADDRESS,ah.SSH_PORT,ah.HOST_ACCOUNT,ah.HOST_PASSWORD,
+		ah.ASSETS_STATUS,ah.CREATE_TIME,ah.UPDATE_TIME,ah.OPERATE_SYSTEM,ah.MEMORY,
+		ah.CPU,ah.DISK,ah.OUTER_IP,ah.INNER_IP,ah.OPERATE_USER_ID,aty.ASSETS_TYPE_NAME
+	</sql>
+	
+	
+	<delete id="deleteHostAppEnv">
+		delete from OPS_BASE_SERVER where ASSETS_ID = #{id}
+	</delete>
+	
+	<select id="selectCount">
+		select count(*) from OPS_BASE_SERVER
+	</select>
+	
+	<select id="repetition">
+		select count(*) from OPS_BASE_SERVER where ASSETS_NAME #{name}
+	</select>
+	
+	<select id="showType" resultMap="typeMap">
+		select ASSETS_TYPE_NAME, ASSETS_TYPE_NAME from OPS_BASE_SERVER_TYPE
+	</select>
+	 
+	<select id="selectHostsByAppEnvId" resultMap="DeployAssetsHostMap">
+	   SELECT * FROM OPS_BASE_SERVER A JOIN OPS_BASE_ENV_SERVER B ON A.ASSETS_ID=B.HOST_ID WHERE B.APP_ENV_ID=#{appEnvId} AND A.ASSETS_STATUS = 0;
+	</select>
+	
+	<select id="selectHostsByPhy" resultMap="DeployAssetsHostMap">
+	   SELECT * FROM OPS_BASE_SERVER A JOIN OPS_BASE_ENV_SERVER B ON A.ASSETS_ID=B.HOST_ID WHERE B.APP_ENV_ID=#{appEnvId} AND A.ASSETS_STATUS = 0 AND A.ASSETS_TYPE != 2;
+	</select>
+	
+	<select id="selectHostsByCon" resultMap="DeployAssetsHostMap">
+	   SELECT * FROM OPS_BASE_SERVER A JOIN OPS_BASE_ENV_SERVER B ON A.ASSETS_ID=B.HOST_ID WHERE B.APP_ENV_ID=#{appEnvId} AND A.ASSETS_STATUS = 0 AND A.ASSETS_TYPE = 2;
+	</select>
+	
+	<select id="selectHostById" resultMap="TempMaoMap">
+		select * from
+		  OPS_BASE_SERVER OBS
+		left join OPS_BASE_SERVER_TYPE OBST on OBST.ASSETS_TYPE_ID = OBS.ASSETS_TYPE
+		left join ADMIN_USER AU on AU.ADMIN_USER_ID = OBS.OPERATE_USER_ID
+		<where>
+		<foreach collection="array" item="element" separator="or">
+		  (ASSETS_ID = #{element})
+        </foreach>
+		</where>
+	</select>
+	
+
+	<delete id="deleteById">
+		delete from OPS_BASE_SERVER where ASSETS_ID = #{hostId}
+	</delete>
+	
+	<select id="selectCountAppEnv" resultType="int">
+		select count(*) from OPS_BASE_ENV_SERVER where HOST_ID = #{hostId} and APP_ENV_ID = #{appEnvId}
+	</select>
+	
+	<!--查询所有服务器,同时返回每台服务器关联的项目及应用-->
+	<select id="selectAllByName" resultMap="AssetsHostVoMap">
+		SELECT 
+		ah.ASSETS_ID,ah.ASSETS_NAME,ah.ASSETS_TYPE,ah.SSH_ADDRESS,ah.SSH_PORT,ah.HOST_ACCOUNT,
+		ah.ASSETS_STATUS,ah.CREATE_TIME,ah.UPDATE_TIME,ah.OPERATE_SYSTEM,ah.MEMORY,
+		ah.CPU,ah.DISK,ah.OUTER_IP,ah.INNER_IP,ah.OPERATE_USER_ID,aty.ASSETS_TYPE_NAME,au.REAL_NAME,ah.INITIAL_STATUS,
+        GROUP_CONCAT(DISTINCT aer.ENV_NAME) as ENVNAME,
+        GROUP_CONCAT(DISTINCT aer.PRO_NAME) as PRONAME,
+        GROUP_CONCAT(DISTINCT aer.APP_NAME) as APPNAME
+		FROM OPS_BASE_SERVER ah 
+		LEFT JOIN OPS_BASE_SERVER_TYPE aty ON(aty.ASSETS_TYPE_ID = ah.ASSETS_TYPE)
+		LEFT JOIN ADMIN_USER au ON au.ADMIN_USER_ID = ah.OPERATE_USER_ID
+		LEFT JOIN OPS_BASE_ENV_SERVER har ON ah.ASSETS_ID = har.HOST_ID
+	        LEFT JOIN OPS_ASSEMBLE_APP aer ON har.APP_ENV_ID = aer.APP_ENV_ID
+		<if test="assetsName != null and assetsName !=''">
+		WHERE ASSETS_NAME LIKE "%"#{assetsName}"%" OR INNER_IP = #{assetsName}
+		</if>
+        GROUP BY
+        ah.ASSETS_ID
+		order by UPDATE_TIME DESC , CREATE_TIME DESC
+	</select>
+
+    <!--获取可以初始化的服务器列表-->
+	<select id="initialableHosts" resultMap="AssetsHostVoMap">
+		SELECT
+		ah.ASSETS_ID,ah.ASSETS_NAME,ah.ASSETS_TYPE,ah.SSH_ADDRESS,ah.SSH_PORT,ah.HOST_ACCOUNT,
+		ah.ASSETS_STATUS,ah.CREATE_TIME,ah.UPDATE_TIME,ah.OPERATE_SYSTEM,ah.MEMORY,
+		ah.CPU,ah.DISK,ah.OUTER_IP,ah.INNER_IP,ah.OPERATE_USER_ID,aty.ASSETS_TYPE_NAME,au.REAL_NAME,ah.INITIAL_STATUS,
+        GROUP_CONCAT(DISTINCT aer.ENV_NAME) as ENVNAME,
+        GROUP_CONCAT(DISTINCT aer.PRO_NAME) as PRONAME,
+        GROUP_CONCAT(DISTINCT aer.APP_NAME) as APPNAME,
+        count(*) AS total
+		FROM OPS_BASE_SERVER ah
+		LEFT JOIN OPS_BASE_SERVER_TYPE aty ON aty.ASSETS_TYPE_ID = ah.ASSETS_TYPE
+		LEFT JOIN ADMIN_USER au ON au.ADMIN_USER_ID = ah.OPERATE_USER_ID
+        INNER JOIN OPS_BASE_ENV_SERVER har ON ah.ASSETS_ID = har.HOST_ID
+        INNER JOIN OPS_ASSEMBLE_APP aer ON har.APP_ENV_ID = aer.APP_ENV_ID
+        <where>
+            <if test="assetsName != null and assetsName !=''">
+                ah.ASSETS_NAME LIKE "%"#{assetsName}"%" OR SSH_ADDRESS = #{assetsName}
+            </if>
+            <if test="envName != null and envName !=''">
+                AND aer.ENV_NAME = #{envName}
+            </if>
+            <if test="appName != null and appName !=''">
+                AND aer.APP_NAME = #{appName}
+            </if>
+            <if test="proName != null and proName !=''">
+                AND aer.PRO_NAME = #{proName}
+            </if>
+            AND ah.INITIAL_STATUS = 0
+        </where>
+        GROUP BY
+        ah.ASSETS_ID
+        HAVING total > 0
+		order by UPDATE_TIME DESC , CREATE_TIME DESC
+	</select>
+
+    <!--根据服务器id查询服务器,返回服务器是否已经关联了应用-->
+	<select id="selectById" resultMap="AssetsHostVoMap">
+    SELECT 
+    ah.ASSETS_ID,ah.ASSETS_NAME,ah.ASSETS_TYPE,ah.SSH_ADDRESS,ah.SSH_PORT,ah.HOST_ACCOUNT,
+    ah.ASSETS_STATUS,ah.CREATE_TIME,ah.UPDATE_TIME,ah.OPERATE_SYSTEM,ah.MEMORY,
+    ah.CPU,ah.DISK,ah.OUTER_IP,ah.INNER_IP,ah.OPERATE_USER_ID,aty.ASSETS_TYPE_NAME,au.REAL_NAME,
+        (
+        SELECT
+        COUNT(*)
+        FROM
+        OPS_BASE_SERVER h
+        INNER JOIN OPS_BASE_ENV_SERVER har ON h.ASSETS_ID = har.HOST_ID
+        WHERE
+        h.ASSETS_ID = #{assetsId}
+        ) AS USED
+    FROM OPS_BASE_SERVER ah 
+    LEFT JOIN OPS_BASE_SERVER_TYPE aty ON(aty.ASSETS_TYPE_ID = ah.ASSETS_TYPE)
+    LEFT JOIN ADMIN_USER au ON au.ADMIN_USER_ID = OPERATE_USER_ID 
+    <if test="assetsId != null and assetsId !=''">
+    WHERE ASSETS_ID = #{assetsId}
+    </if>
+  </select>
+	
+	<select id="selectByAddress" resultMap="DeployAssetsHostMap">
+		select *
+		FROM OPS_BASE_SERVER WHERE SSH_ADDRESS = #{sshAddress}
+	</select>
+	
+	<insert id="insertAssetsHost" parameterType="com.bee.devops.admin.core.vo.request.DeployHostRequest">
+    insert into OPS_BASE_SERVER
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="assetsName != null">
+       ASSETS_NAME,
+      </if>
+      <if test="assetsType!= null">
+        ASSETS_TYPE,
+      </if>
+      <if test="sshAddress != null">
+        SSH_ADDRESS,
+      </if>
+      <if test="sshPort != null">
+        SSH_PORT,
+      </if>
+      <if test="assetsStatus != null">
+        ASSETS_STATUS,
+      </if>
+      <if test="operateSystem != null">
+        OPERATE_SYSTEM,
+      </if>
+      <if test="memory != null">
+       MEMORY,
+      </if>
+      <if test="cpu!= null">
+        CPU,
+      </if>
+      <if test="disk != null">
+        DISK,
+      </if>
+      <if test="outerIp != null">
+        OUTER_IP,
+      </if>
+      <if test="innerIp != null">
+        INNER_IP,
+      </if>
+      <if test="operateUserId != null">
+        OPERATE_USER_ID,
+      </if>
+       <if test="hostAccount != null">
+        HOST_ACCOUNT,
+      </if>
+       <if test="hostPassword != null">
+        HOST_PASSWORD,
+      </if>
+       <if test="initialStatus != null">
+        INITIAL_STATUS,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="assetsName != null">
+        #{assetsName,jdbcType=VARCHAR},
+      </if>
+      <if test="assetsType != null">
+        #{assetsType,jdbcType=INTEGER},
+      </if>
+      <if test="sshAddress != null">
+        #{sshAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="sshPort != null">
+        #{sshPort,jdbcType=INTEGER},
+      </if>
+      <if test="assetsStatus != null">
+        #{assetsStatus,jdbcType=INTEGER},
+      </if>
+      <if test="operateSystem != null">
+        #{operateSystem,jdbcType=VARCHAR},
+      </if>
+      <if test="memory != null">
+        #{memory,jdbcType=VARCHAR},
+      </if>
+      <if test="cpu != null">
+        #{cpu,jdbcType=VARCHAR},
+      </if>
+      <if test="disk != null">
+        #{disk,jdbcType=VARCHAR},
+      </if>
+      <if test="outerIp != null">
+        #{outerIp,jdbcType=VARCHAR},
+      </if>
+      <if test="innerIp != null">
+        #{innerIp,jdbcType=VARCHAR},
+      </if>
+      <if test="operateUserId != null">
+        #{operateUserId,jdbcType=INTEGER},
+      </if>
+      <if test="hostAccount != null">
+        #{hostAccount,jdbcType=VARCHAR},
+      </if>
+       <if test="hostPassword != null">
+        #{hostPassword,jdbcType=VARCHAR},
+      </if>
+       <if test="initialStatus != null">
+        #{initialStatus,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+	
+  <update id="updateById" parameterType="com.bee.devops.admin.core.vo.request.DeployHostRequest">
+    update OPS_BASE_SERVER
+    <set>
+      <if test="assetsName != null">
+        ASSETS_NAME = #{assetsName,jdbcType=VARCHAR},
+      </if>
+      <if test="assetsType != null">
+        ASSETS_TYPE = #{assetsType,jdbcType=INTEGER},
+      </if>
+      <if test="sshAddress != null">
+       SSH_ADDRESS = #{sshAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="sshPort != null">
+       SSH_PORT = #{sshPort,jdbcType=INTEGER},
+      </if>
+      <if test="assetsStatus != null">
+       ASSETS_STATUS = #{assetsStatus,jdbcType=INTEGER},
+      </if>
+      <if test="operateSystem != null">
+        OPERATE_SYSTEM = #{operateSystem,jdbcType=VARCHAR},
+      </if>
+      <if test="memory != null">
+        MEMORY = #{memory,jdbcType=VARCHAR},
+      </if>
+      <if test="cpu != null">
+        CPU = #{cpu,jdbcType=VARCHAR},
+      </if>
+      <if test="disk != null">
+       DISK = #{disk,jdbcType=VARCHAR},
+      </if>
+      <if test="outerIp != null">
+        OUTER_IP = #{outerIp,jdbcType=VARCHAR},
+      </if>
+      <if test="innerIp != null">
+        INNER_IP = #{innerIp,jdbcType=VARCHAR},
+      </if>
+      <if test="operateUserId != null">
+        OPERATE_USER_ID = #{operateUserId,jdbcType=INTEGER},
+      </if>
+      <if test="hostAccount != null">
+        HOST_ACCOUNT = #{hostAccount,jdbcType=VARCHAR},
+      </if>
+       <if test="hostPassword != null">
+        HOST_PASSWORD = #{hostPassword,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ASSETS_ID = #{assetsId,jdbcType=INTEGER}
+  </update>
+
+  <!--更新服务器的初始化状态-->
+  <update id="updateHostInitStatus" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseServer">
+    update OPS_BASE_SERVER
+    <set>
+      <if test="assetsName != null">
+        ASSETS_NAME = #{assetsName,jdbcType=VARCHAR},
+      </if>
+      <if test="assetsType != null">
+        ASSETS_TYPE = #{assetsType,jdbcType=INTEGER},
+      </if>
+      <if test="sshAddress != null">
+       SSH_ADDRESS = #{sshAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="sshPort != null">
+       SSH_PORT = #{sshPort,jdbcType=INTEGER},
+      </if>
+      <if test="assetsStatus != null">
+       ASSETS_STATUS = #{assetsStatus,jdbcType=INTEGER},
+      </if>
+      <if test="operateSystem != null">
+        OPERATE_SYSTEM = #{operateSystem,jdbcType=VARCHAR},
+      </if>
+      <if test="memory != null">
+        MEMORY = #{memory,jdbcType=VARCHAR},
+      </if>
+      <if test="cpu != null">
+        CPU = #{cpu,jdbcType=VARCHAR},
+      </if>
+      <if test="disk != null">
+       DISK = #{disk,jdbcType=VARCHAR},
+      </if>
+      <if test="outerIp != null">
+        OUTER_IP = #{outerIp,jdbcType=VARCHAR},
+      </if>
+      <if test="innerIp != null">
+        INNER_IP = #{innerIp,jdbcType=VARCHAR},
+      </if>
+      <if test="operateUserId != null">
+        OPERATE_USER_ID = #{operateUserId,jdbcType=INTEGER},
+      </if>
+      <if test="hostAccount != null">
+        HOST_ACCOUNT = #{hostAccount,jdbcType=VARCHAR},
+      </if>
+       <if test="hostPassword != null">
+        HOST_PASSWORD = #{hostPassword,jdbcType=VARCHAR},
+      </if>
+       <if test="initialStatus != null">
+        INITIAL_STATUS = #{initialStatus,jdbcType=INTEGER},
+      </if>
+    </set>
+    where ASSETS_ID = #{assetsId,jdbcType=INTEGER}
+  </update>
+
+  <select id="selectSSH" resultType="String">
+  	select SSH_ADDRESS from OPS_BASE_SERVER   where ASSETS_ID = #{hostId,jdbcType=INTEGER}
+  </select>
+  
+  <select id="selectByAppEnv" resultMap="AssetsHostVoMap">
+  	SELECT 
+  	<include refid="AssetsHostVo_Column"/>
+  	 FROM OPS_ASSEMBLE_APP as daer LEFT JOIN OPS_BASE_ENV_SERVER as dhar ON(daer.APP_ENV_ID = dhar.APP_ENV_ID)
+	LEFT JOIN OPS_BASE_SERVER ah ON (dhar.HOST_ID = ah.ASSETS_ID) 
+	LEFT JOIN OPS_BASE_SERVER_TYPE aty ON(ah.ASSETS_TYPE = aty.ASSETS_TYPE_ID)
+	WHERE daer.APP_ID = #{appId} AND daer.ENV_ID = #{envId} order by UPDATE_TIME DESC , CREATE_TIME DESC
+  </select>
+
+  <select id="selectUnused" resultMap="DeployAssetsHostMap">
+    SELECT *
+   FROM OPS_BASE_SERVER WHERE ASSETS_ID NOT IN (SELECT HOST_ID FROM OPS_BASE_ENV_SERVER WHERE APP_ENV_ID = #{appEnvId} ) 
+   order by UPDATE_TIME DESC , CREATE_TIME DESC
+  </select>
+  
+  <insert id="insertAssetsConfig">
+  <!--INSERT INTO OPS_BASE_ENV_SERVER (HOST_ID, APP_ENV_ID) VALUES (#{hostId},#{appEnvId})-->
+  	insert into OPS_BASE_ENV_SERVER(HOST_ID,APP_ENV_ID) select * from (select #{hostId} a, #{appEnvId} b) AS tmp where not exists 
+	( select 1 from 
+	OPS_BASE_ENV_SERVER where HOST_ID=#{hostId} AND APP_ENV_ID = #{appEnvId}) limit 1;
+  </insert>
+  
+  <select id="selectEmploy" parameterType="Long" resultType="Long">
+    SELECT ah.ASSETS_ID FROM  OPS_BASE_SERVER ah LEFT JOIN OPS_BASE_ENV_SERVER dhar ON ah.ASSETS_ID = dhar.HOST_ID 
+	WHERE dhar.APP_ENV_ID = #{appEnvId} AND ah.ASSETS_STATUS = 0 order by ah.UPDATE_TIME DESC , ah.CREATE_TIME DESC
+  </select>
+  
+  <select id="selectAssetsRel" resultType="int">
+  	SELECT COUNT(*) FROM OPS_BASE_ENV_SERVER WHERE HOST_ID = #{hostId}
+  </select>
+  
+  <select id="selectByAppEnvCount" resultType="int">
+  	SELECT COUNT(*) FROM OPS_BASE_ENV_SERVER WHERE APP_ENV_ID = #{appEnvId}
+  </select>
+
+  <!--查询所有可用的服务器-->
+  <select id="selectAll" resultMap="DeployAssetsHostMap">
+  		SELECT  *
+  	 	 FROM  OPS_BASE_SERVER WHERE ASSETS_STATUS = 0;
+  </select>
+	
+  <select id="queryHostEnv" resultType="int">
+	SELECT  COUNT(DISTINCT dhar.HOST_ID) as num from OPS_BASE_ENV_SERVER dhar
+ 	LEFT JOIN OPS_ASSEMBLE_APP daer ON daer.APP_ENV_ID = dhar.APP_ENV_ID INNER JOIN
+	OPS_BASE_ENV de ON de.ENV_ID = daer.ENV_ID
+	WHERE de.ENV_NAME = #{envName}
+  </select>
+  
+  <delete id="deleteByAppEnv">
+  	DELETE FROM  OPS_BASE_ENV_SERVER WHERE APP_ENV_ID = #{appEnvId}
+  </delete>
+
+  <select id="selectRelation"  resultType="com.bee.devops.admin.core.vo.response.HostAppEnvVo">
+  	SELECT HOST_APPENV_ID,HOST_ID,APP_ENV_ID,VERSION_CODE,UPDATE_TIME,OPERATE_USER_ID
+  	FROM OPS_BASE_ENV_SERVER WHERE HOST_ID = #{hostId} AND APP_ENV_ID = #{appEnvId}
+  </select>
+
+  <update id="updateCurrentVersion">
+  	update OPS_BASE_ENV_SERVER
+  	<set>
+      VERSION_CODE = #{versionCode},
+      OPERATE_USER_ID = #{operateUserId}
+    </set>
+    WHERE HOST_APPENV_ID = #{hostAppEnvId}
+  </update>
+
+<select id="selectHostByaddress" resultMap="DeployAssetsHostMap">
+	SELECT *
+	FROM  OPS_BASE_SERVER WHERE find_in_set(SSH_ADDRESS,#{sshAddress})
+</select>
+
+<select id="getById"  resultMap="DeployAssetsHostMap">
+    SELECT *
+    FROM  OPS_BASE_SERVER WHERE ASSETS_ID = #{hostId}
+</select>
+
+<select id="getAccountById"  resultMap="DeployAssetsHostMap">
+    SELECT *
+    FROM  OPS_BASE_SERVER WHERE ASSETS_ID = #{hostId}
+</select>
+
+<select id="queryServerByType" parameterType="int" resultMap="DeployAssetsHostMap">
+	SELECT * FROM OPS_BASE_SERVER WHERE ASSETS_STATUS = 0 AND ASSETS_TYPE = #{type}
+</select>
+
+    <!--获取服务器使用情况,要关联环境-->
+    <select id="getServerUseInfo" resultType="int">
+    SELECT COUNT(DISTINCT a.HOST_ID)  AS USED FROM OPS_BASE_ENV_SERVER a
+	    LEFT JOIN OPS_ASSEMBLE_APP b ON a.APP_ENV_ID = b.APP_ENV_ID
+	WHERE b.ENV_ID = #{envId}
+	<if test="proId != null and proId != ''">
+		AND b.PRO_ID = #{proId}
+	</if>
+    </select>
+
+	 <select id="getServerStatus" resultType="com.bee.devops.admin.core.vo.response.ServerStatusVo">
+	 	select sum(case APP_STATUS when 1 then 1 end) as 'DEPLOY_SERVER',
+	 		  sum(case APP_STATUS when 0 then 1 end) as 'RUN_SERVER',
+	 		  sum(case APP_STATUS when -1 then 1 end) as 'STOP_SERVER' FROM
+			(SELECT obes.* FROM OPS_BASE_ENV_SERVER obes LEFT JOIN OPS_ASSEMBLE_APP oaa ON obes.APP_ENV_ID = oaa.APP_ENV_ID
+			 WHERE PRO_ID = #{proId} AND ENV_ID = #{envId}) AS A
+	 </select>
+	 
+	 <select id="getServerDepAppStatus" resultType="com.bee.devops.admin.core.vo.response.ServerDepAppStatusVo">
+	 	SELECT oaa.APP_NAME, abs.ASSETS_NAME,obes.VERSION_CODE,obes.APP_STATUS FROM OPS_BASE_ENV_SERVER obes 
+			LEFT JOIN OPS_ASSEMBLE_APP oaa ON obes.APP_ENV_ID = oaa.APP_ENV_ID
+			LEFT JOIN OPS_BASE_SERVER abs ON obes.HOST_ID = abs.ASSETS_ID
+		WHERE PRO_ID = #{proId} AND ENV_ID = #{envId}
+	 </select>
+	
+	<select id="getServerUseStatus" resultType="com.bee.devops.admin.core.vo.response.ServerUseStatusResponse">
+		SELECT COUNT(DISTINCT a.ASSETS_ID) AS TOTAL, COUNT(DISTINCT b.HOST_ID) AS USED FROM OPS_BASE_SERVER a
+		LEFT JOIN OPS_BASE_ENV_SERVER b ON b.HOST_ID = a.ASSETS_ID
+	</select>
+</mapper>

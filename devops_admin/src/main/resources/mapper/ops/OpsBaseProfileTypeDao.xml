@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseProfileTypeDao">
+	<resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsBaseProfileType">
+		<id column="PROFILE_TYPE_ID" jdbcType="BIGINT" property="profileTypeId" />
+		<result column="PROFILE_TYPE_NAME" jdbcType="VARCHAR" property="profileTypeName" />
+	</resultMap>
+	<select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		select
+		*
+		from OPS_BASE_PROFILE_TYPE
+		where PROFILE_TYPE_ID = #{profileTypeId,jdbcType=BIGINT}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from OPS_BASE_PROFILE_TYPE
+		where PROFILE_TYPE_ID = #{profileTypeId,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseProfileType">
+		insert into OPS_BASE_PROFILE_TYPE (PROFILE_TYPE_ID,PROFILE_TYPE_NAME)
+		values (#{profileTypeId,jdbcType=BIGINT}, #{profileTypeName,jdbcType=VARCHAR})
+	</insert>
+	<select id="selectProfileTypeNameById" parameterType="java.lang.Long" resultType="java.lang.String">
+		SELECT PROFILE_TYPE_NAME
+		FROM OPS_BASE_PROFILE_TYPE WHERE PROFILE_TYPE_ID = #{profileTypeId,jdbcType=BIGINT}
+	</select>
+
+	<update id="updateByPrimaryKey" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseProfileType">
+		update OPS_BASE_PROFILE_TYPE
+		<set>
+			<if test="profileTypeName != null">
+				PROFILE_TYPE_NAME = #{profileTypeName,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where PROFILE_TYPE_ID = #{profileTypeId,jdbcType=BIGINT}
+	</update>
+
+	<select id="queryAllProfileTypes" resultMap="BaseResultMap">
+		SELECT * FROM OPS_BASE_PROFILE_TYPE
+	</select>
+</mapper>

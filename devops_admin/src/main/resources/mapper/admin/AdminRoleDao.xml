@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.admin.AdminRoleDao">
+	<resultMap type="com.bee.devops.admin.core.common.entity.admin.AdminRole" id="BaseResultMap">
+		<result column="ROLE_ID" jdbcType="BIGINT" property="roleId"/>
+		<result column="ROLE_NAME" jdbcType="VARCHAR" property="roleName"/>
+		<result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
+		<result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
+		<result column="CREATE_USERNAME" jdbcType="VARCHAR" property="createUsername"/>
+		<result column="UPDATE_USERNAME" jdbcType="VARCHAR" property="updateUsername"/>
+		<result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
+	</resultMap>
+
+    <!--用户启用和禁用数量-->
+    <resultMap type="com.bee.devops.admin.core.vo.response.UserInfo" id="userInfo">
+        <result property="enable" column="ENABLE"/>
+        <result property="disable" column="DISABLE"/>
+    </resultMap>
+	
+	<sql id="Base_Column_List">
+		ROLE_ID,ROLE_NAME,CREATE_TIME,UPDATE_TIME,CREATE_USERNAME,DESCRIPTION,UPDATE_USERNAME
+	</sql>
+	
+	<select id="queryAllRole" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List"/>
+		FROM ADMIN_ROLE WHERE 1=1 
+		<if test="roleName != null and roleName != ''">
+			AND ROLE_NAME LIKE "%"#{roleName}"%"
+		</if>
+	</select>
+	
+	<select id="queryRoleList" resultType="com.bee.devops.admin.core.common.entity.admin.AdminRole">
+		select 
+		<include refid="Base_Column_List" />
+		from ADMIN_ROLE
+	</select>
+	
+	<insert id="addRole" parameterType="map">
+		insert into ADMIN_ROLE (ROLE_NAME,DESCRIPTION) VALUES (#{roleName},#{description})
+	</insert>
+	
+	<select id="selectRoleById" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM ADMIN_ROLE WHERE 1=1 
+		<if test="roleId != null and roleId != ''">
+		AND ROLE_ID = #{roleId}
+		</if>
+	</select>
+	
+	<delete id="deleteRole" >
+		delete from ADMIN_ROLE where ROLE_ID=#{roleId}
+	</delete>
+	
+	<update id="updateRole" parameterType="com.bee.devops.admin.core.common.entity.admin.AdminRole">
+	update ADMIN_ROLE
+	<set>
+      <if test="roleName != null">
+        ROLE_NAME = #{roleName,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUsername != null">
+        CREATE_USERNAME = #{createUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="updateUsername != null">
+        UPDATE_USERNAME = #{updateUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        DESCRIPTION = #{description,jdbcType=VARCHAR},
+      </if>
+    </set>
+    WHERE ROLE_ID = #{roleId}
+	</update>
+	
+	<insert id="addRoleInfo" parameterType="com.bee.devops.admin.core.common.entity.admin.AdminRole">
+	insert into ADMIN_ROLE
+	<trim prefix="(" suffix=")" suffixOverrides=",">
+       <if test="roleName != null">
+        ROLE_NAME,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME,
+      </if>
+      <if test="createUsername != null">
+        CREATE_USERNAME,
+      </if>
+      <if test="updateUsername != null">
+        UPDATE_USERNAME,
+      </if>
+      <if test="description != null">
+        DESCRIPTION,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+        <if test="roleName != null">
+        #{roleName,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createUsername != null">
+        #{createUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="updateUsername != null">
+        #{updateUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+    </trim>
+	</insert>
+	
+	<select id="selectRoleByName" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List"/>
+		FROM ADMIN_ROLE WHERE ROLE_NAME = #{roleName}
+	</select>
+	
+	<insert id="insertRoleResource" >
+	   INSERT INTO ADMIN_ROLE_RESOURCE(ROLE_ID, RESOURCE_ID) VALUES 
+	   <foreach collection="resourceIds" item="item" index="index" separator=",">
+	    ( #{roleId,jdbcType=INTEGER}, #{item,jdbcType=INTEGER})
+       </foreach>
+    </insert>
+    
+    <delete id="deleteRoleResource">
+        DELETE FROM ADMIN_ROLE_RESOURCE WHERE ROLE_ID = #{roleId, jdbcType=INTEGER}
+    </delete>
+    
+    <delete id="deleteRoleResourceByResourceId">
+        DELETE FROM ADMIN_ROLE_RESOURCE WHERE RESOURCE_ID = #{resourceId, jdbcType=INTEGER}
+    </delete>
+	
+	<select id="queryRoleIdsByUser" parameterType="Long" resultType="Long">
+	   select ROLE_ID from ADMIN_USER_ROLE WHERE USER_ID = #{userId, jdbcType=INTEGER}
+	</select>
+	
+	<select id="queryRolesByUserId" parameterType="Long" resultMap="BaseResultMap">
+	   select b.* from ADMIN_USER_ROLE a join ADMIN_ROLE b on a.ROLE_ID = b.ROLE_ID WHERE a.USER_ID = #{userId, jdbcType=INTEGER}
+	</select>
+
+	<delete id="deleteUserRole">
+        DELETE FROM ADMIN_USER_ROLE WHERE USER_ID = #{userId, jdbcType=INTEGER}
+    </delete>
+
+    <insert id="insertUserRole" >
+       INSERT INTO ADMIN_USER_ROLE(USER_ID, ROLE_ID) VALUES
+       <foreach collection="roleIds" item="item" index="index" separator=",">
+        ( #{userId,jdbcType=INTEGER}, #{item,jdbcType=INTEGER})
+       </foreach>
+    </insert>
+
+    <delete id="deleteUserRoleByRoleId">
+        DELETE FROM ADMIN_USER_ROLE WHERE ROLE_ID = #{roleId, jdbcType=INTEGER}
+    </delete>
+
+    <!--获取用户启用和禁用数量-->
+	<select id="getUserCountInfo" resultMap="userInfo">
+        SELECT
+            COUNT(*) AS ENABLE,
+            (
+                SELECT
+                    COUNT(*)
+                FROM
+                    ADMIN_USER
+                WHERE
+                    IS_ACTIVE = 0
+            ) AS DISABLE
+        FROM
+            ADMIN_USER
+        WHERE
+            IS_ACTIVE = 1
+	</select>
+</mapper>

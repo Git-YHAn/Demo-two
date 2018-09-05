@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDepDao">
+  <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppDep">
+    <id column="DEP_APP_VER_ID" jdbcType="BIGINT" property="depAppVerId" />
+    <result column="APP_ENV_ID" jdbcType="BIGINT" property="appEnvId" />
+    <result column="APP_VERSION_ID" jdbcType="BIGINT" property="appVersionId" />
+    <result column="CONFIG_VERSION_ID" jdbcType="BIGINT" property="configVersionId" />
+    <result column="VERSION_CODE" jdbcType="VARCHAR" property="versionCode" />
+    <result column="COMMIT_ID" jdbcType="BIGINT" property="commitId" />
+    <result column="STATUS" jdbcType="INTEGER" property="status" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="OPERATE_USER_ID" jdbcType="BIGINT" property="operateUserId" />
+    <result column="USED" jdbcType="INTEGER" property="used" />
+  </resultMap>
+  
+  <resultMap id="DeployAppVersionsResultMap" type="com.bee.devops.admin.core.vo.response.DeployAppVersionVo">
+    <result column="ENV_NAME" property="envName" jdbcType="VARCHAR"/>
+    <result column="PRO_NAME" property="proName" jdbcType="VARCHAR"/>
+    <result column="APP_NAME" property="appName" jdbcType="VARCHAR"/>
+    <result column="VERSION_CODE" property="versionCode" jdbcType="VARCHAR"/>
+    <result column="APP_VERSION_CODE" property="appVersionCode" jdbcType="VARCHAR"/>
+    <result column="OPS_VERSION_CONFIG_CODE" property="configVersionCode" jdbcType="VARCHAR"/>
+    <result column="STATUS" property="status" jdbcType="INTEGER"/>
+    <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+    <result column="REAL_NAME" property="operateUserName" jdbcType="VARCHAR"/>
+    <result column="CREATE_TIME" property="createTime" jdbcType="VARCHAR"/>
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="VARCHAR"/>
+    <result column="DEPLOY_APP_IMAGES_GIT_URL" property="deployAppImagesGitUrl" jdbcType="VARCHAR"/>
+    <result column="ENV_ID" property="envId" jdbcType="BIGINT"/>
+    <result column="TAG_URL" property="tagUrl" jdbcType="VARCHAR"/>
+    <result column="DEPLOY_APP_GIT_URL" property="deployAppGitUrl" jdbcType="VARCHAR"/>
+    <result column="PRO_ID" property="proId" jdbcType="BIGINT"/>
+    <result column="APP_ID" property="appId" jdbcType="BIGINT"/>
+    <result column="USED" jdbcType="INTEGER" property="used" />
+
+    <result column="CONFIG_GIT_URL" property="configGitUrl" jdbcType="VARCHAR"/>
+    <result column="APP_GIT_URL" property="appGitUrl" jdbcType="VARCHAR"/>
+    <result column="CONFIG_TAG_URL" property="configTagUrl" jdbcType="VARCHAR"/>
+    <result column="APP_TAG_URL" property="appTagUrl" jdbcType="VARCHAR"/>
+    <result column="APP_VERSION_INFO" property="appVersionInfo" jdbcType="VARCHAR"/>
+    <result column="CONFIG_VERSION_INFO" property="configVersionInfo" jdbcType="VARCHAR"/>
+  </resultMap>
+  
+  <resultMap type="com.bee.devops.admin.core.vo.response.PublishVersionResponse" id="QueryResultMap">
+	<result property="proId" column="PRO_ID" />
+	<result property="proName" column="PRO_NAME" />
+	<result property="envId" column="ENV_ID" />
+	<result property="envName" column="ENV_NAME" />
+	<result property="appId" column="APP_ID" />
+	<result property="appName" column="APP_NAME" />
+    <!--新增两项2018.08.13-->
+	<result property="deployGitUrl" column="DEPLOY_APP_GIT_URL" />
+	<association property="latestVo" column="APP_ENV_ID" select="getNewestRecord"></association>
+	<association property="appTypeId" column="APP_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsBaseAppDao.getAppTypeId"/>
+	<association property="publishVersionCode" column="APP_ENV_ID" select="getNewestVersion"></association>
+	<association property="appVerId" column="APP_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDao.getMaxAppVersionId"></association>
+	<association property="configVerId" column="APP_ENV_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionConfigDao.getMaxConfigVersionId"></association>
+       <collection property="applicationVersions" column="APP_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsVersionApp" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDao.queryAppVersionsByAppEnvId">
+       </collection>
+	<collection property="configVersions" column="APP_ENV_ID" ofType="com.bee.devops.admin.core.common.entity.ops.OpsVersionConfig" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionConfigDao.queryConfigVersionsByAppEnvId">
+	</collection>
+  </resultMap>
+	
+  <resultMap id="BaseHisResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppDepHis">
+    <id column="DEP_VER_HIS_ID" jdbcType="BIGINT" property="depVerHisId" />
+    <result column="APP_ENV_ID" jdbcType="BIGINT" property="appEnvId" />
+    <result column="APP_ID" jdbcType="BIGINT" property="appId" />
+    <result column="APP_VERSION_ID" jdbcType="BIGINT" property="appVersionId" />
+    <result column="CONFIG_VERSION_ID" jdbcType="BIGINT" property="configVersionId" />
+    <result column="VERSION_CODE" jdbcType="VARCHAR" property="versionCode" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="OPERATE_USER_ID" jdbcType="BIGINT" property="operateUserId" />
+    <result column="STATUS_MESSAGE" jdbcType="VARCHAR" property="statusMessages" />
+    <result column="PRODOUCTION_STATUS" jdbcType="INTEGER" property="prodouctionStatus" />
+  </resultMap>
+	
+  <sql id="Base_Column_List">
+    DEP_APP_VER_ID, APP_ENV_ID, APP_VERSION_ID, CONFIG_VERSION_ID, VERSION_CODE, COMMIT_ID, 
+    STATUS, DESCRIPTION, CREATE_TIME, UPDATE_TIME, OPERATE_USER_ID
+  </sql> 
+
+  <select id="queryWaitEnactApps" resultMap="QueryResultMap">
+  	SELECT A.*
+	FROM OPS_ASSEMBLE_APP A
+	WHERE A.PRO_ID=#{proId} AND A.ENV_ID=#{envId}
+	ORDER BY A.APP_NAME
+  </select>
+  
+  <select id="getMaxDeployVersion" resultType="String">
+      SELECT MAX(VERSION_CODE) FROM OPS_VERSION_APP_DEP WHERE APP_ENV_ID=#{appEnvId} AND VERSION_CODE LIKE "%"#{todayTime}"%"
+  </select>
+
+  <select id="getNewestVersion" resultType="String">
+    SELECT MAX(VERSION_CODE) FROM OPS_VERSION_APP_DEP WHERE APP_ENV_ID=#{appEnvId}
+  </select>
+
+  <!--获取对应环境下的最新版本号对应的一条记录-->
+  <select id="getNewestRecord" resultType="com.bee.devops.admin.core.vo.response.LatestPublishVersionVo">
+    SELECT
+      OVAD.*, ova.DESCRIPTION AS appVersionInfo,
+              ovc.DESCRIPTION AS configVersionInfo
+    FROM
+      OPS_VERSION_APP_DEP OVAD
+      LEFT JOIN OPS_VERSION_APP ova ON OVAD.APP_VERSION_ID = ova.APP_VER_ID
+      LEFT JOIN OPS_VERSION_CONFIG ovc ON OVAD.CONFIG_VERSION_ID = ovc.CONFIG_VER_ID
+    WHERE
+      OVAD.APP_ENV_ID = #{appEnvId}
+    ORDER BY
+      VERSION_CODE DESC
+    LIMIT 1
+  </select>
+
+  <!--获取发布版本列表-->
+  <select id="searchAppVersion" resultMap="DeployAppVersionsResultMap">
+    select	de.ENV_NAME,dp.PRO_NAME,da.APP_NAME,dav.VERSION_CODE,av.VERSION_CODE as 'APP_VERSION_CODE',dav.USED,
+			cv.VERSION_CODE as 'OPS_VERSION_CONFIG_CODE',dav.`STATUS`,dav.DESCRIPTION,au.REAL_NAME,ader.DEPLOY_APP_GIT_URL,ader.CONFIG_GIT_URL,da.APP_GIT_URL,cv.TAG_URL AS CONFIG_TAG_URL,av.TAG_URL as APP_TAG_URL,
+			dav.CREATE_TIME,dav.UPDATE_TIME,ader.DEPLOY_APP_IMAGES_GIT_URL,ader.ENV_ID,dp.PRO_ID,da.APP_ID,dav.TAG_URL,av.DESCRIPTION as APP_VERSION_INFO,cv.DESCRIPTION as CONFIG_VERSION_INFO
+	from   (OPS_VERSION_APP_DEP dav 	
+	left join OPS_ASSEMBLE_APP ader on (ader.APP_ENV_ID = dav.APP_ENV_ID)) 
+	left join OPS_VERSION_APP av on (dav.APP_VERSION_ID=av.APP_VER_ID) 
+	left join OPS_VERSION_CONFIG cv on(dav.CONFIG_VERSION_ID=cv.CONFIG_VER_ID) 
+	left join OPS_BASE_APP da on (ader.APP_ID = da.APP_ID) 
+	left join OPS_BASE_ENV de on (ader.ENV_ID=de.ENV_ID) 
+	left join OPS_BASE_PRO dp on (da.PRO_ID=dp.PRO_ID) 
+	left join ADMIN_USER au on (dav.OPERATE_USER_ID=au.ADMIN_USER_ID)
+	WHERE ader.ENV_ID = #{envId,jdbcType=INTEGER} AND dp.PRO_ID = #{proId,jdbcType=INTEGER}
+	<if test="appName != null and appName !=''">
+			AND ader.APP_NAME LIKE "%"#{appName}"%"
+	</if>
+	ORDER BY dav.UPDATE_TIME DESC, dav.CREATE_TIME DESC
+  </select> 
+
+  <select id="getReleaseVersionNotUsedCount" resultType="INTEGER">
+    select	count(dav.DEP_APP_VER_ID)
+	from   (OPS_VERSION_APP_DEP dav
+	left join OPS_ASSEMBLE_APP ader on (ader.APP_ENV_ID = dav.APP_ENV_ID))
+	left join OPS_VERSION_APP av on (dav.APP_VERSION_ID=av.APP_VER_ID)
+	left join OPS_VERSION_CONFIG cv on(dav.CONFIG_VERSION_ID=cv.CONFIG_VER_ID)
+	left join OPS_BASE_APP da on (ader.APP_ID = da.APP_ID)
+	left join OPS_BASE_ENV de on (ader.ENV_ID=de.ENV_ID)
+	left join OPS_BASE_PRO dp on (da.PRO_ID=dp.PRO_ID)
+	left join ADMIN_USER au on (dav.OPERATE_USER_ID=au.ADMIN_USER_ID)
+	WHERE ader.ENV_ID = #{envId,jdbcType=INTEGER} AND dp.PRO_ID = #{proId,jdbcType=INTEGER} AND dav.USED = 0
+  </select>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from OPS_VERSION_APP_DEP
+    where DEP_APP_VER_ID = #{depAppVerId,jdbcType=INTEGER}
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from OPS_VERSION_APP_DEP
+    where DEP_APP_VER_ID = #{depAppVerId,jdbcType=INTEGER}
+  </delete>
+  
+  <insert id="insert" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppDep">
+    insert into OPS_VERSION_APP_DEP (APP_ENV_ID, APP_VERSION_ID, 
+      CONFIG_VERSION_ID, VERSION_CODE, COMMIT_ID, 
+      STATUS, DESCRIPTION, CREATE_TIME, 
+      UPDATE_TIME, OPERATE_USER_ID)
+    values (#{appEnvId,jdbcType=INTEGER}, #{appVersionId,jdbcType=INTEGER}, 
+      #{configVersionId,jdbcType=INTEGER}, #{versionCode,jdbcType=VARCHAR}, #{commitId,jdbcType=VARCHAR}, 
+      #{status,jdbcType=INTEGER}, #{description,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP}, #{operateUserId,jdbcType=INTEGER})
+  </insert>
+  
+  <insert id="insertSelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppDep">
+    insert into OPS_VERSION_APP_DEP
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="appEnvId != null">
+        APP_ENV_ID,
+      </if>
+      <if test="appVersionId != null">
+        APP_VERSION_ID,
+      </if>
+      <if test="configVersionId != null">
+        CONFIG_VERSION_ID,
+      </if>
+      <if test="versionCode != null">
+        VERSION_CODE,
+      </if>
+      <if test="commitId != null">
+        COMMIT_ID,
+      </if>
+      <if test="status != null">
+        STATUS,
+      </if>
+      <if test="description != null">
+        DESCRIPTION,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME,
+      </if>
+      <if test="operateUserId != null">
+        OPERATE_USER_ID,
+      </if>
+      <if test="tagUrl != null">
+        TAG_URL,
+      </if>
+      <if test="used != null">
+        USED,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="appEnvId != null">
+        #{appEnvId,jdbcType=INTEGER},
+      </if>
+      <if test="appVersionId != null">
+        #{appVersionId,jdbcType=INTEGER},
+      </if>
+      <if test="configVersionId != null">
+        #{configVersionId,jdbcType=INTEGER},
+      </if>
+      <if test="versionCode != null">
+        #{versionCode,jdbcType=VARCHAR},
+      </if>
+      <if test="commitId != null">
+        #{commitId,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operateUserId != null">
+        #{operateUserId,jdbcType=INTEGER},
+      </if>
+      <if test="tagUrl != null">
+        #{tagUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="used != null">
+        #{used,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  
+  <update id="updateByPrimaryKeySelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppDep">
+    update OPS_VERSION_APP_DEP
+    <set>
+      <if test="appEnvId != null">
+        APP_ENV_ID = #{appEnvId,jdbcType=INTEGER},
+      </if>
+      <if test="appVersionId != null">
+        APP_VERSION_ID = #{appVersionId,jdbcType=INTEGER},
+      </if>
+      <if test="configVersionId != null">
+        CONFIG_VERSION_ID = #{configVersionId,jdbcType=INTEGER},
+      </if>
+      <if test="versionCode != null">
+        VERSION_CODE = #{versionCode,jdbcType=VARCHAR},
+      </if>
+      <if test="commitId != null">
+        COMMIT_ID = #{commitId,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        STATUS = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="description != null">
+        DESCRIPTION = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="operateUserId != null">
+        OPERATE_USER_ID = #{operateUserId,jdbcType=INTEGER},
+      </if>
+      <if test="used != null">
+        USED = #{used,jdbcType=INTEGER}
+      </if>
+    </set>
+    where DEP_APP_VER_ID = #{depAppVerId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppDep">
+    update OPS_VERSION_APP_DEP
+    set APP_ENV_ID = #{appEnvId,jdbcType=INTEGER},
+      APP_VERSION_ID = #{appVersionId,jdbcType=INTEGER},
+      CONFIG_VERSION_ID = #{configVersionId,jdbcType=INTEGER},
+      VERSION_CODE = #{versionCode,jdbcType=VARCHAR},
+      COMMIT_ID = #{commitId,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=INTEGER},
+      DESCRIPTION = #{description,jdbcType=VARCHAR},
+      CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      OPERATE_USER_ID = #{operateUserId,jdbcType=INTEGER}
+    where DEP_APP_VER_ID = #{depAppVerId,jdbcType=INTEGER}
+  </update>
+  
+  <select id="getDataByVersionCode" resultMap="DeployAppVersionsResultMap">
+  	select DESCRIPTION FROM OPS_VERSION_APP_DEP WHERE VERSION_CODE = #{versionCode}
+  </select>
+  
+   <select id="getMaxVersionId" resultType="LONG">
+      SELECT DEP_APP_VER_ID FROM OPS_VERSION_APP_DEP
+      WHERE DEP_APP_VER_ID=(SELECT MAX(DEP_APP_VER_ID) FROM OPS_VERSION_APP_DEP WHERE APP_ENV_ID=#{appEnvId})
+  </select> 
+    
+  <select id="queryDeployAppVersionsByAppEnvId" resultMap="BaseResultMap">
+     SELECT  
+     *
+     FROM OPS_VERSION_APP_DEP WHERE APP_ENV_ID = #{appEnvId} ORDER BY VERSION_CODE DESC
+  </select> 
+  
+  <select id="queryDepAppVersByAppEnvId" resultMap="BaseResultMap">
+     SELECT  
+     *
+     FROM OPS_VERSION_APP_DEP WHERE APP_ENV_ID = #{appEnvId} ORDER BY VERSION_CODE DESC LIMIT 10
+  </select>
+  
+  <insert id="insertDeeAppVerHis" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppDepHis"  useGeneratedKeys="true" keyProperty="depVerHisId">
+  	insert into OPS_VERSION_APP_DEP_HIS
+  		(APP_ENV_ID, APP_VERSION_ID, CONFIG_VERSION_ID, VERSION_CODE,DESCRIPTION, OPERATE_USER_ID,
+  		 PRODUCTION_STATUS, STATUS_MESSAGE, APP_ID)
+  	VALUES (#{appEnvId,jdbcType=BIGINT}, #{appVersionId,jdbcType=BIGINT}, #{configVersionId,jdbcType=BIGINT},
+      		#{versionCode,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{operateUserId,jdbcType=BIGINT}, 
+      		#{productionStatus,jdbcType=INTEGER}, #{statusMessages,jdbcType=VARCHAR}, #{appId,jdbcType=BIGINT})
+  </insert>
+  
+  <update id="updateDeeAppVerHis" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsVersionAppDepHis">
+  	update OPS_VERSION_APP_DEP_HIS set 
+  		PRODUCTION_STATUS = #{productionStatus,jdbcType=INTEGER}, STATUS_MESSAGE = #{statusMessages,jdbcType=VARCHAR}
+  	WHERE DEP_VER_HIS_ID = #{depVerHisId,jdbcType=BIGINT}
+  </update>
+  
+  <select id="queryMakingVersion" resultMap="BaseHisResultMap">
+  	SELECT * from 
+  	(SELECT A.* FROM OPS_VERSION_APP_DEP_HIS A 
+  	LEFT JOIN OPS_ASSEMBLE_APP B ON A.APP_ENV_ID = B.APP_ENV_ID 
+  	WHERE B.PRO_ID=#{proId} AND B.ENV_ID=#{envId} ORDER BY CREATE_TIME DESC) C GROUP BY C.APP_ID
+  </select>
+  
+  <update id="changeVersionStatus" parameterType="long">
+  	update OPS_VERSION_APP_DEP_HIS set 
+  		PRODUCTION_STATUS = 0
+  	WHERE DEP_VER_HIS_ID = #{appDepVerHisId,jdbcType=BIGINT}
+  </update>
+  
+  <select id="getNewestVersionHis" resultType="String">
+    SELECT MAX(VERSION_CODE) FROM OPS_VERSION_APP_DEP_HIS WHERE APP_ENV_ID=#{appEnvId}
+  </select>
+  
+    <select id="getMaxDeployVersionHis" resultType="String">
+      SELECT MAX(VERSION_CODE) FROM OPS_VERSION_APP_DEP_HIS WHERE APP_ENV_ID=#{appEnvId} AND VERSION_CODE LIKE "%"#{todayTime}"%"
+  </select>
+  
+  <select id="getVerHisByStatusId" resultMap="BaseHisResultMap">
+  	SELECT * from  OPS_VERSION_APP_DEP_HIS WHERE APP_ENV_ID=#{appEnvId} AND PRODUCTION_STATUS = 100
+  </select>
+</mapper>

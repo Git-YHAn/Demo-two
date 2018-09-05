@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsAppConfigDao">
+    <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsAppConfig">
+        <result property="recordId" column="RECORD_ID"/>
+        <result property="recordStatus" column="RECORD_STATUS"/>
+        <result property="appId" column="APP_ID"/>
+        <result property="proId" column="PRO_ID"/>
+        <result property="appName" column="APP_NAME"/>
+        <result property="proName" column="PRO_NAME"/>
+        <result property="branchName" column="BRANCH_NAME"/>
+        <result property="editorId" column="EDITOR_ID"/>
+        <result property="commitDate" column="COMMIT_DATE"/>
+        <result property="auditorId" column="AUDITOR_ID"/>
+        <result property="auditDate" column="AUDIT_DATE"/>
+        <result property="beginSha" column="BEGIN_SHA"/>
+        <result property="endSha" column="END_SHA"/>
+        <result property="editorName" column="EDITOR_NAME"/>
+        <result property="auditorName" column="AUDITOR_NAME"/>
+        <result property="commitMessage" column="COMMIT_MESSAGE"/>
+        <result property="auditStatus" column="AUDIT_STATUS"/>
+    </resultMap>
+
+    <insert id="addAppConfigRecord" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsAppConfig">
+        INSERT INTO
+            OPS_APP_CONFIG (RECORD_STATUS, APP_ID, PRO_ID, APP_NAME, PRO_NAME, BRANCH_NAME, EDITOR_ID, COMMIT_DATE, AUDITOR_ID,
+                            AUDIT_DATE, BEGIN_SHA, END_SHA, EDITOR_NAME, AUDITOR_NAME, COMMIT_MESSAGE)
+        VALUES
+            (#{recordStatus, jdbcType=INTEGER}, #{appId, jdbcType=BIGINT}, #{proId, jdbcType=BIGINT},
+                                                #{appName, jdbcType=VARCHAR}, #{proName, jdbcType=VARCHAR},
+                                                #{branchName, jdbcType=VARCHAR},
+                                                #{editorId, jdbcType=BIGINT}, #{commitDate, jdbcType=TIMESTAMP},
+                                                #{auditorId, jdbcType=BIGINT}, #{auditDate, jdbcType=TIMESTAMP},
+                                                #{beginSha, jdbcType=VARCHAR},
+             #{endSha, jdbcType=VARCHAR}, #{editorName, jdbcType=VARCHAR},
+             #{auditorName, jdbcType=VARCHAR}, #{commitMessage, jdbcType=VARCHAR})
+    </insert>
+
+    <update id="updateAppConfigRecordStatus">
+        UPDATE OPS_APP_CONFIG
+        SET RECORD_STATUS = #{newStatus}
+        WHERE RECORD_ID = #{recordId} AND RECORD_STATUS = #{oldStatus}
+    </update>
+
+    <!--更新记录-->
+    <update id="updateAppConfigRecord" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsAppConfig">
+        UPDATE OPS_APP_CONFIG
+        <set>
+            <if test="endSha != null">
+                END_SHA = #{endSha},
+            </if>
+            <if test="commitDate != null">
+                COMMIT_DATE = #{commitDate},
+            </if>
+            <if test="auditStatus != null">
+                AUDIT_STATUS = #{auditStatus},
+            </if>
+        </set>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <update id="updateAuditInfo" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsAppConfig">
+        UPDATE OPS_APP_CONFIG
+        SET AUDITOR_ID = #{auditorId}, AUDITOR_NAME = #{auditorName}, AUDIT_DATE = #{auditDate}
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+
+    <!--查询应用审核记录-->
+    <select id="queryAppConfigRecordsByUser" resultMap="BaseResultMap">
+        SELECT *
+        FROM OPS_APP_CONFIG
+        <where>
+            <if test="proId != null">
+                PRO_ID = #{proId}
+            </if>
+            <if test="appId != null">
+                AND APP_ID = #{appId}
+            </if>
+            <if test="userId != null">
+                AND EDITOR_ID = #{userId}
+            </if>
+        </where>
+        ORDER BY COMMIT_DATE DESC
+    </select>
+
+    <!--查询待审应用,即已经提交审核的应用-->
+    <select id="queryCommitAppConfigRecords" resultMap="BaseResultMap">
+        SELECT *
+        FROM OPS_APP_CONFIG
+        <where>
+            <if test="proId != null">
+                PRO_ID = #{proId}
+            </if>
+            <if test="appId != null">
+                AND APP_ID = #{appId}
+            </if>
+            AND RECORD_STATUS = 1
+        </where>
+        ORDER BY COMMIT_DATE DESC
+    </select>
+
+    <!--根据记录id获取应用审核记录-->
+    <select id="getAppConfigRecord" resultMap="BaseResultMap">
+        SELECT *
+        FROM OPS_APP_CONFIG
+        WHERE RECORD_ID = ${recordId}
+    </select>
+
+    <!--根据项目id、应用id及分支名称获取记录-->
+    <select id="getRecord" resultMap="BaseResultMap">
+        SELECT *
+        FROM OPS_APP_CONFIG
+        WHERE PRO_ID = ${proId} AND APP_ID = #{appId} AND BRANCH_NAME = #{branch}
+    </select>
+</mapper>

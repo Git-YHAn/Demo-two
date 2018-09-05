@@ -1,0 +1,6 @@
+include 'devops_admin'
+
+rootProject.children.each {project ->
+	project.buildFileName = "${project.name}.gradle"
+}
+

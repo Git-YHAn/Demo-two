@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.admin.AdminUriDao">
+    <resultMap type="com.bee.devops.admin.core.common.entity.admin.AdminUri" id="BaseResultMap">
+        <result column="INTERFACE_ID" jdbcType="BIGINT" property="interfaceId"/>
+        <result column="INTERFACE_NAME" jdbcType="VARCHAR" property="interfaceName"/>
+        <result column="INTERFACE_URL" jdbcType="VARCHAR" property="interfaceUrl"/>
+    </resultMap>
+
+    <insert id="addUri" parameterType="com.bee.devops.admin.core.common.entity.admin.AdminUri">
+        INSERT INTO ADMIN_INTERFACE (INTERFACE_NAME, INTERFACE_URL) VALUES (#{interfaceName}, #{interfaceUrl})
+    </insert>
+
+    <update id="editUri" parameterType="com.bee.devops.admin.core.common.entity.admin.AdminUri">
+        UPDATE ADMIN_INTERFACE
+        <set>
+            <if test="interfaceName != null and interfaceName != ''">
+                INTERFACE_NAME = #{interfaceName},
+            </if>
+            <if test="interfaceUrl != null and interfaceUrl != ''">
+                INTERFACE_URL = #{interfaceUrl},
+            </if>
+        </set>
+        WHERE INTERFACE_ID = #{interfaceId}
+    </update>
+
+    <delete id="deleteUri" parameterType="Long">
+        DELETE FROM ADMIN_INTERFACE
+        WHERE INTERFACE_ID = #{interfaceId}
+    </delete>
+
+    <!--根据接口id删除  <资源-接口>关联表中对应的记录-->
+    <delete id="deleteResourceWithInterfaceId" parameterType="Long">
+        DELETE FROM ADMIN_RESOURCE_INTERFACE
+        WHERE INTERFACE_ID = #{interfaceId}
+    </delete>
+
+    <select id="getUriById" parameterType="Long" resultMap="BaseResultMap">
+        SELECT
+            INTERFACE_ID,
+            INTERFACE_NAME,
+            INTERFACE_URL
+        FROM ADMIN_INTERFACE
+        WHERE INTERFACE_ID = #{interfaceId}
+    </select>
+
+    <!--获取当前登录用户可以访问的接口集合-->
+    <select id="getPermissions" parameterType="Long" resultType="String">
+        SELECT
+            DISTINCT ai.INTERFACE_URL
+        FROM
+            ADMIN_USER_ROLE aur
+            INNER JOIN ADMIN_ROLE_RESOURCE arr ON aur.ROLE_ID = arr.ROLE_ID
+            INNER JOIN ADMIN_RESOURCE_INTERFACE ari ON arr.RESOURCE_ID = ari.RESOURCE_ID
+            INNER JOIN ADMIN_INTERFACE ai ON ari.INTERFACE_ID = ai.INTERFACE_ID
+        WHERE aur.USER_ID = #{userId}
+    </select>
+
+</mapper>

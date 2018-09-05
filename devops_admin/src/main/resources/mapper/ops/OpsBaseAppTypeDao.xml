@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseAppTypeDao">
+	<resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsBaseAppType">
+		<id column="APP_TYPE_ID" jdbcType="BIGINT" property="appTypeId" />
+		<result column="APP_TYPE_NAME" jdbcType="VARCHAR" property="appTypeName" />
+		<result column="SCRIPT_PATH" jdbcType="VARCHAR" property="scriptPath" />
+		<result column="DEPLOY_PATH" jdbcType="VARCHAR" property="deployPath" />
+	</resultMap>
+	<select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		select
+		*
+		from OPS_BASE_APP_TYPE
+		where APP_TYPE_ID = #{appTypeId,jdbcType=BIGINT}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from OPS_BASE_APP_TYPE
+		where APP_TYPE_ID = #{appTypeId,jdbcType=BIGINT}
+	</delete>
+	<insert id="insert" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseAppType">
+		insert into OPS_BASE_APP_TYPE (APP_TYPE_ID, APP_TYPE_NAME, SCRIPT_PATH,
+		DEPLOY_PATH)
+		values (#{appTypeId,jdbcType=BIGINT}, #{appTypeName,jdbcType=VARCHAR}, #{scriptPath,jdbcType=VARCHAR},
+		#{deployPath,jdbcType=VARCHAR})
+	</insert>
+	<insert id="insertSelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseAppType">
+		insert into OPS_BASE_APP_TYPE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="appTypeId != null">
+				APP_TYPE_ID,
+			</if>
+			<if test="appTypeName != null">
+				APP_TYPE_NAME,
+			</if>
+			<if test="scriptPath != null">
+				SCRIPT_PATH,
+			</if>
+			<if test="deployPath != null">
+				DEPLOY_PATH,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="appTypeId != null">
+				#{appTypeId,jdbcType=BIGINT},
+			</if>
+			<if test="appTypeName != null">
+				#{appTypeName,jdbcType=VARCHAR},
+			</if>
+			<if test="scriptPath != null">
+				#{scriptPath,jdbcType=VARCHAR},
+			</if>
+			<if test="deployPath != null">
+				#{deployPath,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseAppType">
+		update OPS_BASE_APP_TYPE
+		<set>
+			<if test="appTypeName != null">
+				APP_TYPE_NAME = #{appTypeName,jdbcType=VARCHAR},
+			</if>
+			<if test="scriptPath != null">
+				SCRIPT_PATH = #{scriptPath,jdbcType=VARCHAR},
+			</if>
+			<if test="deployPath != null">
+				DEPLOY_PATH = #{deployPath,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where APP_TYPE_ID = #{appTypeId,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseAppType">
+		update OPS_BASE_APP_TYPE
+		set APP_TYPE_NAME = #{appTypeName,jdbcType=VARCHAR},
+		SCRIPT_PATH = #{scriptPath,jdbcType=VARCHAR},
+		DEPLOY_PATH = #{deployPath,jdbcType=VARCHAR}
+		where APP_TYPE_ID = #{appTypeId,jdbcType=BIGINT}
+	</update>
+</mapper>

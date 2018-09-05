@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsDepAppHisDao">
+    <resultMap id="HistoryVersionResultMap" type="com.bee.devops.admin.core.vo.response.HistoryVersionVo">
+        <result column="ENV_NAME" property="envName" jdbcType="VARCHAR"/>
+        <result column="PRO_NAME" property="proName" jdbcType="VARCHAR"/>
+        <result column="APP_NAME" property="appName" jdbcType="VARCHAR"/>
+        <result column="AUTO_RESTART" property="autoRestart" jdbcType="INTEGER"/>
+        <result column="PUBLISH_STATUS" property="publishStatus" jdbcType="INTEGER"/>
+        <result column="PUBLISH_CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="PUBLISH_INFO" property="publishInfo" jdbcType="VARCHAR"/>
+        <result column="DEPLOY_VERSION_CODE" property="deployVersionCode" jdbcType="VARCHAR"/>
+        <result column="TAG_URL" property="tagUrl" jdbcType="VARCHAR"/>
+        <result column="DEPLOY_APP_GIT_URL" property="deployAppGitUrl" jdbcType="VARCHAR"/>
+        <result column="APP_VERSION_INFO" property="appVersionInfo" jdbcType="VARCHAR"/>
+        <result column="DEPLOY_TYPE" property="deployType" jdbcType="INTEGER"/>
+        <result column="CONFIG_VERSION_INFO" property="configVersionInfo" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <association property="assetsName" column="SERVER_ID" select="queryAssetsNameByAssetId"/>
+        <association property="assetsType" column="SERVER_ID" select="queryAssetsTypeByAssetId"/>
+        <association property="sshAddress" column="SERVER_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerDao.selectSSH"/>
+        <association property="operationUserName" column="OPERATE_USER_ID" select="queryOperateUserNameByOperateUserId"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsDepApp">
+        INSERT INTO OPS_DEP_APP_HIS (DEPLOY_VERSION_ID, DEPLOY_VERSION_CODE,PUBLISH_STATUS, AUTO_RESTART, SERVER_ID,
+               APP_ENV_ID, DEPLOY_TYPE, PUBLISH_CREATE_TIME, OPERATE_USER_ID, PUBLISH_INFO)
+        VALUES (#{deployVersionId,jdbcType=BIGINT}, #{deployVersionCode,jdbcType=VARCHAR},#{publishStatus,jdbcType=INTEGER},
+        		#{autoRestart,jdbcType=INTEGER}, #{serverId,jdbcType=BIGINT},#{appEnvId,jdbcType=BIGINT},#{deployType,jdbcType=BIGINT},
+        		#{publishDate,jdbcType=TIMESTAMP}, #{operateUserId,jdbcType=BIGINT}, #{publishInfo,jdbcType=VARCHAR})
+    </insert>
+
+    <!--查询应用发布历史,同时返回对应的发布版本的比对版本号-->
+    <select id="queryPublishAppHistory" resultMap="HistoryVersionResultMap">
+        SELECT pah.*,daer.*,ovad.TAG_URL,ovad.DESCRIPTION,ova.DESCRIPTION APP_VERSION_INFO,ovc.DESCRIPTION CONFIG_VERSION_INFO
+        FROM OPS_DEP_APP_HIS pah
+        LEFT JOIN OPS_ASSEMBLE_APP daer USING(APP_ENV_ID)
+        LEFT JOIN OPS_VERSION_APP_DEP ovad ON ovad.DEP_APP_VER_ID = pah.DEPLOY_VERSION_ID
+        LEFT JOIN OPS_VERSION_APP ova ON ova.APP_VER_ID = ovad.APP_ENV_ID
+        LEFT JOIN OPS_VERSION_CONFIG ovc ON ovc.CONFIG_VER_ID = ovad.CONFIG_VERSION_ID
+        WHERE daer.ENV_ID = #{envId,jdbcType=INTEGER} AND daer.PRO_ID = #{proId,jdbcType=INTEGER} AND DEPLOY_TYPE = 2
+        <if test="appName != null and appName !=''">
+            AND (daer.APP_NAME LIKE "%${appName}%")
+        </if>
+        <if test="publishStatus != null and publishStatus != -1">
+            AND pah.PUBLISH_STATUS = #{publishStatus,jdbcType=INTEGER}
+        </if>
+        ORDER BY pah.PUBLISH_CREATE_TIME DESC
+    </select>
+
+    <select id="queryAssetsNameByAssetId" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT ah.ASSETS_NAME
+        FROM OPS_BASE_SERVER ah
+        WHERE ah.ASSETS_ID = #{assetId,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryAssetsTypeByAssetId" parameterType="java.lang.Long" resultType="int">
+        SELECT ah.ASSETS_TYPE
+        FROM OPS_BASE_SERVER ah
+        WHERE ah.ASSETS_ID = #{assetId,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryOperateUserNameByOperateUserId" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT REAL_NAME FROM ADMIN_USER
+        WHERE ADMIN_USER_ID = #{operateUserId,jdbcType=BIGINT}
+    </select>
+</mapper>

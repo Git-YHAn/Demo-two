@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsDepAppOrderInfoDao">
+  <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.vo.response.OpsDepAppOrderInfoResponse">
+    <id column="ORDER_INFO_ID" jdbcType="BIGINT" property="orderInfoId" />
+    <result column="ORDER_ID" jdbcType="BIGINT" property="orderId" />
+    <result column="APP_ENV_ID" jdbcType="BIGINT" property="appEnvId" />
+    <result column="APP_NAME" jdbcType="VARCHAR" property="appName" />
+    <result column="SERVER_ID" jdbcType="BIGINT" property="serverId" />
+    <result column="SERVER_IP" jdbcType="VARCHAR" property="serverIp" />
+    <result column="SERVER_NAME" jdbcType="VARCHAR" property="serverName" />
+    <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createDate" />
+    <result column="UPDATE_DATE" jdbcType="TIMESTAMP" property="updateDate" />
+    <result column="DEPLOY_STATUS" jdbcType="INTEGER" property="deployStatus" />
+    <result column="DEPLOY_TYPE" jdbcType="INTEGER" property="deployType" />
+    <result column="DEPLOY_LOG" jdbcType="LONGVARCHAR" property="deployLog" />
+    <result column="DEPLOY_START_DATE" jdbcType="TIMESTAMP" property="startDate"/>
+    <result column="DEPLOY_END_DATE" jdbcType="TIMESTAMP" property="endDate"/>
+    <association property="version" column="DEP_APP_VER_ID" select="queryDepAppVerById"/>
+  </resultMap>
+
+
+  <resultMap id="OrderInfoVerVoResultMap" type="com.bee.devops.admin.core.vo.response.OpsDepAppOrderInfoVersionVo">
+      <result column="DEP_APP_VER_ID" jdbcType="BIGINT" property="versionId" />
+      <result column="VERSION_CODE" jdbcType="VARCHAR" property="versionCode" />
+      <result column="DESCRIPTION" jdbcType="VARCHAR" property="versionDesc" />
+  </resultMap>
+
+    <!--获取应用发布统计情况,包括发布成功率-->
+    <resultMap id="releaseInfo" type="com.bee.devops.admin.core.vo.response.AppReleaseInfo">
+        <result column="TOTAL" jdbcType="INTEGER" property="total"/>
+        <result column="SUCCESSNUM" jdbcType="VARCHAR" property="successNum"/>
+        <result column="FAILNUM" jdbcType="VARCHAR" property="failNum"/>
+    </resultMap>
+
+    <resultMap id="OrderInfoVoResultMap" type="com.bee.devops.admin.core.vo.response.OpsDepAppOrderInfoVo">
+      <result column="ORDER_INFO_ID" jdbcType="BIGINT" property="detailId"/>
+      <result column="SERVER_ID" jdbcType="BIGINT" property="serverId"/>
+      <result column="SERVER_NAME" jdbcType="VARCHAR" property="serverName"/>
+      <result column="SERVER_IP" jdbcType="VARCHAR" property="sshAddress"/>
+      <result column="DEP_APP_VER_ID" jdbcType="BIGINT" property="depAppVerId"/>
+      <result column="DEPLOY_STATUS" jdbcType="VARCHAR" property="publishStatus"/>
+      <result column="DEPLOY_LOG" jdbcType="LONGVARCHAR" property="deployLog"/>
+      <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createTime"/>
+      <result column="DEPLOY_START_DATE" jdbcType="TIMESTAMP" property="startDate"/>
+      <result column="DEPLOY_END_DATE" jdbcType="TIMESTAMP" property="endDate"/>
+      <association column="DEP_APP_VER_ID" property="versionCode" select="searchDepAppVerCode"/>
+      <association column="DEP_APP_VER_ID" property="versionDesc" select="searchDepAppVerDesc"/>
+    </resultMap>
+
+    <resultMap id="AppEnvAndDepAppVerAndServerResultMap" type="com.bee.devops.admin.core.vo.response.OpsDepAppOrderInfoAppEnvVo">
+        <association property="appEnv" column="APP_ENV_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsAssembleAppDao.selectByPrimaryKey"/>
+        <association property="server" column="SERVER_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerDao.getById"/>
+        <association property="depAppVer" column="DEP_APP_VER_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsVersionAppDepDao.selectByPrimaryKey"/>
+    </resultMap>
+
+  <sql id="Base_Column_List">
+    ORDER_INFO_ID, ORDER_ID, APP_ENV_ID, APP_NAME, SERVER_ID, SERVER_IP, SERVER_NAME, 
+    DEP_APP_VER_ID, CREATE_DATE, UPDATE_DATE, DEPLOY_STATUS, DEPLOY_TYPE, DEPLOY_LOG, DEPLOY_START_DATE, DEPLOY_end_DATE
+  </sql>
+  <select id="queryOrderInfosByOrderId" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from OPS_DEP_APP_ORDER_INFO
+    where ORDER_ID = #{orderId} ORDER BY CREATE_DATE DESC
+  </select>
+
+    <!--获取应用发布统计情况,包括发布成功率-->
+    <select id="getReleaseInfo" resultMap="releaseInfo">
+        SELECT
+        SUM(if(tmp.STATUS = 300, tmp.count, 0)) AS SUCCESSNUM,
+        SUM(if(tmp.STATUS <![CDATA[ < ]]> 0, tmp.count, 0)) AS FAILNUM,
+        SUM(if(tmp.STATUS != 0, tmp.count, 0)) AS TOTAL
+        FROM 
+        (SELECT a.DEPLOY_STATUS AS STATUS, COUNT(*) AS count FROM OPS_DEP_APP_ORDER_INFO a
+	        JOIN OPS_ASSEMBLE_APP b ON a.APP_ENV_ID = b.APP_ENV_ID
+	        WHERE b.ENV_ID = #{envId}
+	        <if test="proId != null and proId != ''">
+	       	 	AND b.PRO_ID = #{proId}
+	        </if>
+       		GROUP BY a.DEPLOY_STATUS)  tmp
+    </select>
+  
+  <select id="queryByOrderInfoId" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from OPS_DEP_APP_ORDER_INFO
+    where ORDER_INFO_ID = #{orderInfoId}
+  </select>
+  <insert id="insertDepAppOrderInfo" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsDepAppOrderInfo" useGeneratedKeys="true" keyProperty="orderInfoId">
+    insert into OPS_DEP_APP_ORDER_INFO
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        ORDER_ID,
+      </if>
+      <if test="appEnvId != null">
+        APP_ENV_ID,
+      </if>
+      <if test="appName != null">
+        APP_NAME,
+      </if>
+      <if test="serverId != null">
+        SERVER_ID,
+      </if>
+      <if test="serverIp != null">
+        SERVER_IP,
+      </if>
+      <if test="serverName != null">
+      	SERVER_NAME,
+      </if>
+      <if test="depAppVerId != null">
+      	DEP_APP_VER_ID,
+      </if>
+      <if test="createDate != null">
+      	CREATE_DATE,
+      </if>
+      <if test="deployStatus != null">
+      	DEPLOY_STATUS,
+      </if>
+      <if test="deployType != null">
+      	DEPLOY_TYPE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        #{orderId,jdbcType=BIGINT},
+      </if>
+      <if test="appEnvId != null">
+        #{appEnvId,jdbcType=BIGINT},
+      </if>
+      <if test="appName != null">
+        #{appName,jdbcType=VARCHAR},
+      </if>
+      <if test="serverId != null">
+        #{serverId,jdbcType=BIGINT},
+      </if>
+      <if test="serverIp != null">
+        #{serverIp,jdbcType=VARCHAR},
+      </if>
+      <if test="serverName != null">
+        #{serverName,jdbcType=VARCHAR},
+      </if>
+      <if test="depAppVerId != null">
+        #{depAppVerId,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deployStatus != null">
+        #{deployStatus,jdbcType=INTEGER},
+      </if>
+      <if test="deployType != null">
+        #{deployType,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+  <select id="queryOrderInfoByAppEnvAndServerId" resultMap="OrderInfoVoResultMap">
+    SELECT ORDER_INFO_ID,SERVER_ID,SERVER_NAME,SERVER_IP,DEP_APP_VER_ID,DEPLOY_LOG,DEPLOY_STATUS,CREATE_DATE,APP_ENV_ID
+      FROM OPS_DEP_APP_ORDER_INFO ODAOI
+    WHERE APP_ENV_ID=#{appEnvId,jdbcType=BIGINT} AND SERVER_ID=#{serverId,jdbcType=BIGINT}
+    ORDER BY ODAOI.UPDATE_DATE DESC LIMIT 1
+  </select>
+
+  <select id="queryDepAppVerById" resultMap="OrderInfoVerVoResultMap">
+    SELECT DEP_APP_VER_ID, VERSION_CODE, DESCRIPTION FROM OPS_VERSION_APP_DEP
+    WHERE DEP_APP_VER_ID = #{depAppVerId,jdbcType=BIGINT}
+  </select>
+
+  <select id="searchDepAppVerCode" resultType="java.lang.String">
+    SELECT VERSION_CODE
+    FROM OPS_VERSION_APP_DEP
+    WHERE DEP_APP_VER_ID=#{depAppVerId,jdbcType=BIGINT}
+  </select>
+
+  <select id="searchDepAppVerDesc" resultType="java.lang.String">
+    SELECT DESCRIPTION
+    FROM OPS_VERSION_APP_DEP
+    WHERE DEP_APP_VER_ID=#{depAppVerId,jdbcType=BIGINT}
+  </select>
+
+  <update id="updateByOrderAndServerIdSelective" parameterType="com.bee.devops.admin.core.vo.response.OpsDepAppOrderInfoResponse">
+    UPDATE OPS_DEP_APP_ORDER_INFO
+      <set>
+        <if test="startDate != null">
+          DEPLOY_START_DATE=#{startDate,jdbcType=TIMESTAMP},
+        </if>
+        <if test="endDate != null">
+          DEPLOY_END_DATE=#{endDate,jdbcType=TIMESTAMP},
+        </if>
+        <if test="deployStatus != null">
+          DEPLOY_STATUS=#{deployStatus,jdbcType=INTEGER},
+        </if>
+        <if test="deployLog != null and deployLog != ''">
+          DEPLOY_LOG=#{deployLog,jdbcType=LONGVARCHAR}
+        </if>
+      </set>
+    WHERE SERVER_ID=#{serverId,jdbcType=BIGINT} AND ORDER_ID=#{orderId,jdbcType=BIGINT}
+  </update>
+
+  <select id="queryDeployingServersByOrderId" resultType="java.lang.Long">
+    select SERVER_ID
+    from OPS_DEP_APP_ORDER_INFO ODAOI
+      LEFT JOIN OPS_BASE_ENV_SERVER OBES ON ODAOI.SERVER_ID = OBES.HOST_ID
+    where ORDER_ID = #{orderId,jdbcType=BIGINT} AND OBES.APP_STATUS=1
+  </select>
+  
+  <select id="queryOrderInfos" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from OPS_DEP_APP_ORDER_INFO    
+    <if test="orderinfos != null">
+		where ORDER_INFO_ID in (
+			<foreach collection="orderinfos" item="orderInfoId" index="index" separator="," >  
+		        #{orderInfoId,jdbcType=INTEGER} 
+		    </foreach>
+	    )	
+	</if>
+	order by APP_NAME
+  </select>
+  
+  <delete id="deleteOrderInfosByOrderId" parameterType="java.lang.Long">
+        delete from OPS_DEP_APP_ORDER_INFO
+        where ORDER_ID = #{orderId,jdbcType=INTEGER}
+  </delete>
+
+  <select id="queryAppEnvAndDepAppVerAndServer" parameterType="java.lang.Long" resultMap="AppEnvAndDepAppVerAndServerResultMap">
+    SELECT APP_ENV_ID,SERVER_ID,DEP_APP_VER_ID FROM OPS_DEP_APP_ORDER_INFO WHERE ORDER_INFO_ID = #{orderInfoId,jdbcType=BIGINT}
+  </select>
+
+    <select id="getAppDeployData" resultType="com.bee.devops.admin.core.vo.response.DeployAppVo">
+    	SELECT a.APP_NAME, sum(case when 0 > DEPLOY_STATUS then 1 end) as 'RUN_FAILE',
+		    	sum(case DEPLOY_STATUS when 300 then 1 end) as 'RUN_SUCCESS' FROM OPS_DEP_APP_ORDER_INFO a
+		    	LEFT JOIN OPS_ASSEMBLE_APP b ON a.APP_ENV_ID = b.APP_ENV_ID
+				WHERE b.PRO_ID = #{proId} AND b.ENV_ID = #{envId} AND a.UPDATE_DATE > #{time} GROUP BY a.APP_NAME
+    </select>
+    
+    <select id="getAppPublishStatus" resultType="com.bee.devops.admin.core.vo.response.DeployAppVo">
+    	SELECT  sum(case when 0 > DEPLOY_STATUS then 1 end) as 'RUN_FAILE',
+		    	sum(case DEPLOY_STATUS when 300 then 1 end) as 'RUN_SUCCESS' FROM OPS_DEP_APP_ORDER_INFO a
+		    	LEFT JOIN OPS_ASSEMBLE_APP b ON a.APP_ENV_ID = b.APP_ENV_ID
+    </select>
+</mapper>

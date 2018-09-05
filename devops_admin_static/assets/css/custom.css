@@ -1,0 +1,89 @@
+.page-content-wrapper .page-content {
+  padding-top: 10px;
+  min-height: calc(100vh - 90px);
+}
+
+.page-content-white .page-title {
+    margin-top: 15px;
+}
+
+.page-sidebar .page-sidebar-menu>li.sidebar-title>a {
+  margin-bottom: 20px;
+  padding-top: 0;
+  cursor: default;
+}
+
+.page-sidebar .page-sidebar-menu>li.sidebar-title>a .sidebar-title-content>.dropdown {
+  cursor: pointer;
+}
+
+.page-sidebar .page-sidebar-menu>li.sidebar-title .sidebar-title-content {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.page-sidebar .page-sidebar-menu li>a>.badge, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu li>a>.badge {
+  float: right;
+  margin-top: 1px;
+  margin-right: 0px;
+  position: absolute;
+  right: 14px;
+  top: auto;
+}
+
+.page-sidebar .page-sidebar-menu li.sidebar-title:hover .dropdown-menu {
+  display: block;
+}
+
+.page-sidebar .page-sidebar-menu li.sidebar-title .dropdown-menu li {
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  padding: 9px 10px;
+  white-space: normal;
+}
+
+.sidebar-title .form-horizontal .form-group.form-md-line-input {
+  padding: 0;
+  margin: 0;
+}
+
+.dropdown-menu>li>a:hover, .dropdown-header-menu>li>a:focus {
+  background-color: inherit;
+}
+
+.form-group.form-md-line-input .form-control input {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #c2cad8;
+  border-radius: 0;
+  color: #fff;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 14px;
+}
+
+.login {
+  background-color: inherit !important;
+}
+
+input[type="file"].el-upload__input {
+  display: none;
+}
+
+.portlet > .portlet-title:before, .portlet > .portlet-title:after {
+    display: none;
+}
+
+.progress-bar-wait {
+    background-color: #BFCAD1;
+}
+
+.progress-bar-success {
+    background-color: #36D7B7;
+}

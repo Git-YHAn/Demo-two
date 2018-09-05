@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsSysParameterDao">
+    <resultMap id="SysParamResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsSysParameter">
+        <id column="SYS_PARAMETER_ID" jdbcType="BIGINT" property="sysParameterId"/>
+        <result column="SYS_PARAMETER_NAME" jdbcType="VARCHAR" property="sysParameterName"/>
+        <result column="SYS_PARAMETER_VALUE" jdbcType="VARCHAR" property="sysParameterValue"/>
+    </resultMap>
+
+    <update id="saveOrUpdate">
+        INSERT INTO OPS_SYS_PARAMETER (SYS_PARAMETER_NAME, SYS_PARAMETER_VALUE)
+        VALUES (#{name,jdbcType=VARCHAR}, #{value,jdbcType=VARCHAR})
+        ON DUPLICATE KEY UPDATE
+            SYS_PARAMETER_VALUE = #{value,jdbcType=VARCHAR}
+    </update>
+
+    <select id="queryAllOpsSysParameters" resultMap="SysParamResultMap">
+        SELECT
+            OSP.SYS_PARAMETER_ID,
+            OSP.SYS_PARAMETER_NAME,
+            OSP.SYS_PARAMETER_VALUE
+        FROM OPS_SYS_PARAMETER OSP
+    </select>
+
+    <select id="queryOpsSysParameterByName" parameterType="java.lang.String">
+        SELECT
+            OSP.SYS_PARAMETER_ID,
+            OSP.SYS_PARAMETER_NAME,
+            OSP.SYS_PARAMETER_VALUE
+        FROM OPS_SYS_PARAMETER OSP
+        WHERE SYS_PARAMETER_NAME = #{name,jdbcType=VARCHAR}
+    </select>
+</mapper>

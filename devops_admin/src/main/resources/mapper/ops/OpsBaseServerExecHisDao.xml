@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerExecHisDao">
+
+    <resultMap id="execHisResultMap" type="com.bee.devops.admin.core.vo.response.DeployAssetsExecHisVo">
+        <result property="sshAddress" column="SSH_ADDRESS" jdbcType="VARCHAR"/>
+        <result property="operateUserName" column="REAL_NAME" jdbcType="VARCHAR"/>
+        <result property="execTplName" column="TPL_NAME" jdbcType="VARCHAR"/>
+        <result property="execContent" column="EXEC_CONTENT" jdbcType="VARCHAR"/>
+        <result property="execTime" column="EXEC_TIME" jdbcType="TIMESTAMP"/>
+        <result property="execResult" column="EXEC_RESULT" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <insert id="insertExecHis">
+        INSERT INTO OPS_BASE_SERVER_EXEC_HIS (EXEC_HIS_ID, EXEC_CONTENT, EXEC_RESULT, TPL_ID, EXEC_TIME, ASSETS_ID, ADMIN_USER_ID)
+        VALUES (#{execHisId,jdbcType=BIGINT}, #{execContent,jdbcType=VARCHAR}, #{execResult,jdbcType=VARCHAR},
+                #{execTplId,jdbcType=BIGINT},
+                #{execTime,jdbcType=TIMESTAMP}, #{assetsId,jdbcType=BIGINT}, #{operateUserId,jdbcType=BIGINT})
+    </insert>
+
+    <delete id="deleteExecHisById">
+        DELETE FROM OPS_BASE_SERVER_EXEC_HIS
+        WHERE EXEC_HIS_ID = #{execHisId,jdbcType=BIGINT}
+    </delete>
+
+    <select id="selectAll" resultMap="execHisResultMap">
+        SELECT OBSEH.*,OBS.SSH_ADDRESS,AU.REAL_NAME,OBST.TPL_NAME
+        FROM OPS_BASE_SERVER_EXEC_HIS OBSEH
+        LEFT JOIN OPS_BASE_SERVER OBS USING(ASSETS_ID)
+        LEFT JOIN ADMIN_USER AU USING(ADMIN_USER_ID)
+        LEFT JOIN OPS_BASE_SERVER_TEMP OBST USING(TPL_ID)
+        <where>
+            <if test="sshAddress != null">
+                OBS.SSH_ADDRESS LIKE "%"#{sshAddress}"%"
+            </if>
+            <if test="execTime != null">
+                AND OBSEH.EXEC_TIME LIKE "%"#{execTime}"%"
+            </if>
+            <if test="tplName != null and tplName != ''">
+                AND OBST.TPL_NAME LIKE "%"#{tplName}"%"
+            </if>
+        </where>
+        ORDER BY OBSEH.EXEC_TIME DESC
+    </select>
+</mapper>

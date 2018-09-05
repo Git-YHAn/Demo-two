@@ -1,0 +1,48 @@
+apply plugin: 'org.springframework.boot'
+
+ext {
+}
+
+dependencies {
+
+	testCompile("org.springframework.boot:spring-boot-starter-test")
+	compile("org.springframework.boot:spring-boot-starter-web")
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+	compile("org.springframework.boot:spring-boot-starter-freemarker")
+	compile("org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatis_starter_version}")
+	compile("com.github.pagehelper:pagehelper:${pagehelper_version}")
+	compile("mysql:mysql-connector-java")
+	compile("com.alibaba:druid:${druid_version}")
+	compile("org.apache.commons:commons-lang3:3.0")
+	compile("com.fasterxml.jackson.core:jackson-core:2.9.2")
+    compile("org.springframework.boot:spring-boot-starter-security")
+    compile("org.springframework.boot:spring-boot-devtools")
+	compile("org.eclipse.jgit:org.eclipse.jgit:4.11.0.201803080745-r")
+	compile("com.offbytwo.jenkins:jenkins-client:0.3.7")
+	compile("com.jcraft:jsch:0.1.54")
+	compile("io.springfox:springfox-swagger2:2.6.1")
+	compile("io.springfox:springfox-swagger-ui:2.6.1")
+	compile("junit:junit:4.12")
+	compile("org.springframework:spring-test:4.3.14.RELEASE")
+	compile("org.springframework.boot:spring-boot-starter-thymeleaf:1.5.9.RELEASE")
+	compile("org.springframework.boot:spring-boot-starter-logging:1.5.9.RELEASE")
+	compile("com.corundumstudio.socketio:netty-socketio:1.7.14")
+	compile("io.jsonwebtoken:jjwt:0.9.0")
+	compile("com.alibaba:fastjson:1.1.40")
+	compile("com.bee.msa:dingtalk-chatbot-sdk:0.9.0")
+	compile("org.springframework.boot:spring-boot-starter-validation:2.0.1.RELEASE")
+	compile("org.aspectj:aspectjweaver:1.8.13")
+    compile("org.apache.poi:poi-ooxml:3.17")
+    compile("com.ksyun:ksc-sdk-java-core:0.2.7")
+    compile("org.apache.httpcomponents:httpcore:4.4.3")
+    compile("ch.ethz.ganymed:ganymed-ssh2:build210")
+    compile("org.apache.ant:ant:1.10.5")
+
+}
+
+
+dependencyManagement {
+	imports {
+		
+	}
+}

@@ -1,0 +1,2 @@
+# 配置shell脚本文件的格式为unix格式,即行末尾为lf;windows格式下,行末尾为crlf,这样的脚本文件在linux下无法执行;
+*.sh text eol=lf

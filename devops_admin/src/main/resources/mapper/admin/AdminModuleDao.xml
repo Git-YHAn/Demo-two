@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.admin.AdminModuleDao">
+    <sql id="BASE_COLUMN">
+        MODULE_ID, MODULE_NAME, MODULE_CODE, MODULE_URL, PARENT_ID, IS_ENABLE, IS_SHOW, ADD_CHILD
+    </sql>
+
+    <!--根据父模块id获取子模块id-->
+    <select id="getModulesByParentId" parameterType="Long"
+            resultType="com.bee.devops.admin.core.common.entity.admin.AdminModule">
+        SELECT
+        <include refid="BASE_COLUMN"/>
+        FROM ADMIN_MODULE
+        WHERE PARENT_ID = #{parentId}
+    </select>
+
+    <!--添加模块-->
+    <insert id="addModule">
+        INSERT INTO ADMIN_MODULE (MODULE_NAME, MODULE_CODE, MODULE_URL, PARENT_ID, IS_ENABLE, IS_SHOW, ADD_CHILD)
+        VALUES
+            (#{moduleName}, #{moduleCode}, #{moduleUrl}, #{parentId}, #{isEnable},
+             #{isShow}, #{addChild})
+    </insert>
+
+    <!--编辑模块-->
+    <update id="editModule" parameterType="com.bee.devops.admin.core.common.entity.admin.AdminModule">
+        UPDATE ADMIN_MODULE
+        <set>
+            <if test="moduleName != null and moduleName != ''">
+                MODULE_NAME = #{moduleName},
+            </if>
+            <if test="moduleCode != null and moduleCode != ''">
+                MODULE_CODE = #{moduleCode},
+            </if>
+            <if test="moduleUrl != null and moduleUrl != ''">
+                MODULE_URL = #{moduleUrl},
+            </if>
+            <if test="parentId != null and parentId != ''">
+                PARENT_ID = #{parentId},
+            </if>
+            <if test="isEnable != null and isEnable != ''">
+                IS_ENABLE = #{isEnable},
+            </if>
+            <if test="isShow != null and isShow != ''">
+                IS_SHOW = #{isShow},
+            </if>
+            <if test="addChild != null and addChild != ''">
+                ADD_CHILD = #{addChild},
+            </if>
+        </set>
+        WHERE MODULE_ID = #{moduleId}
+    </update>
+
+    <!--删除模块-->
+    <delete id="deleteModule" parameterType="Long">
+        DELETE FROM ADMIN_MODULE
+        WHERE MODULE_ID = #{moduleId}
+    </delete>
+</mapper>

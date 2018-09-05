@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.admin.AdminResourceDao">
+    <resultMap type="com.bee.devops.admin.core.common.entity.admin.AdminResource" id="BaseResultMap">
+        <result column="RESOURCE_ID" jdbcType="BIGINT" property="resourceId"/>
+        <result column="RESOURCE_NAME" jdbcType="VARCHAR" property="resourceName"/>
+        <result column="RESOURCE_CODE" jdbcType="VARCHAR" property="resourceCode"/>
+        <result column="RESOURCE_URL" jdbcType="VARCHAR" property="resourceUrl"/>
+        <result column="RESOURCE_ICON" jdbcType="VARCHAR" property="resourceIcon"/>
+        <result column="PARENT_ID" jdbcType="BIGINT" property="parentId"/>
+        <result column="MODULE_ID" jdbcType="BIGINT" property="moduleId"/>
+        <result column="IS_ENABLE" jdbcType="INTEGER" property="isEnable"/>
+        <result column="IS_SHOW" jdbcType="INTEGER" property="isShow"/>
+        <result column="RESOURCE_ORDER" jdbcType="INTEGER" property="resourceOrder"/>
+        <result column="RESOURCE_TYPE" jdbcType="INTEGER" property="resourceType"/>
+    </resultMap>
+
+    <sql id="BASE_COLUMN">
+        AR.RESOURCE_ID, AR.RESOURCE_NAME, AR.RESOURCE_CODE, AR.RESOURCE_URL, AR.RESOURCE_ICON, AR.PARENT_ID, AR.MODULE_ID, AR.IS_ENABLE, AR.IS_SHOW, AR.RESOURCE_ORDER, AR.RESOURCE_TYPE
+    </sql>
+
+    <!--编辑资源-->
+    <update id="editResource" parameterType="com.bee.devops.admin.core.common.entity.admin.AdminResource">
+        UPDATE ADMIN_RESOURCE
+        <set>
+            <if test="resourceName != null and resourceName != ''">
+                RESOURCE_NAME = #{resourceName},
+            </if>
+            <if test="resourceCode != null and resourceCode != ''">
+                RESOURCE_CODE = #{resourceCode},
+            </if>
+            <if test="resourceUrl != null and resourceUrl != ''">
+                RESOURCE_URL = #{resourceUrl},
+            </if>
+            <if test="resourceIcon != null and resourceIcon != ''">
+                RESOURCE_ICON = #{resourceIcon},
+            </if>
+            <if test="parentId != null and parentId != ''">
+                PARENT_ID = #{parentId},
+            </if>
+            <if test="moduleId != null and moduleId != ''">
+                MODULE_ID = #{moduleId},
+            </if>
+            <if test="isEnable != null and isEnable != ''">
+                IS_ENABLE = #{isEnable},
+            </if>
+            <if test="isShow != null and isShow != ''">
+                IS_SHOW = #{isShow},
+            </if>
+            <if test="resourceOrder != null and resourceOrder != ''">
+                RESOURCE_ORDER = #{resourceOrder},
+            </if>
+            <if test="resourceType != null and resourceType != ''">
+                RESOURCE_TYPE = #{resourceType},
+            </if>
+        </set>
+        WHERE RESOURCE_ID = #{resourceId}
+    </update>
+
+    <!--删除资源-->
+    <delete id="deleteResource" parameterType="Long">
+        DELETE FROM ADMIN_RESOURCE
+        WHERE RESOURCE_ID = #{resourceId}
+    </delete>
+
+    <!--添加资源-->
+    <insert id="addResource" parameterType="com.bee.devops.admin.core.common.entity.admin.AdminResource"
+            useGeneratedKeys="true" keyProperty="resourceId">
+        INSERT INTO ADMIN_RESOURCE (RESOURCE_NAME, RESOURCE_CODE, RESOURCE_URL, RESOURCE_ICON, PARENT_ID, MODULE_ID, IS_ENABLE, IS_SHOW, RESOURCE_ORDER, RESOURCE_TYPE)
+        VALUES
+            (#{resourceName}, #{resourceCode}, #{resourceUrl}, #{resourceIcon}, #{parentId}, #{moduleId}, #{isEnable},
+             #{isShow}, #{resourceOrder}, #{resourceType})
+    </insert>
+
+    <!--获取当前登录用户的资源id集合-->
+    <select id="getResourceIdList" parameterType="Long" resultType="Long">
+        SELECT DISTINCT B.RESOURCE_ID AS resourceId
+        FROM ADMIN_USER_ROLE A
+            LEFT JOIN ADMIN_ROLE_RESOURCE B ON A.ROLE_ID = B.ROLE_ID
+            LEFT JOIN ADMIN_RESOURCE C ON C.RESOURCE_ID = B.RESOURCE_ID
+        WHERE A.USER_ID = #{adminUserId} AND C.IS_ENABLE = 1
+    </select>
+
+    <!--获取资源集合-->
+    <select id="querySysResourceList" resultType="com.bee.devops.admin.core.common.entity.admin.AdminResource">
+        SELECT
+            RESOURCE_ID    AS resourceId,
+            RESOURCE_NAME  AS resourceName,
+            RESOURCE_CODE  AS resourceCode,
+            RESOURCE_URL   AS resourceUrl,
+            RESOURCE_ICON  AS resourceIcon,
+            PARENT_ID      AS parentId,
+            MODULE_ID      AS moduleId,
+            IS_ENABLE      AS isEnable,
+            IS_SHOW        AS isShow,
+            RESOURCE_ORDER AS resourceOrder,
+            RESOURCE_TYPE  AS resourceType
+        FROM ADMIN_RESOURCE
+    </select>
+
+    <!--根据资源id获取资源详情-->
+    <select id="getDetailByResourceId" parameterType="Long"
+            resultType="com.bee.devops.admin.core.common.entity.admin.AdminResource">
+        SELECT *
+        FROM ADMIN_RESOURCE
+        WHERE RESOURCE_ID = #{resourceId}
+    </select>
+
+    <!--根据父资源id获取其子资源集合-->
+    <select id="getListByParentId" parameterType="Long"
+            resultType="com.bee.devops.admin.core.common.entity.admin.AdminResource">
+        SELECT
+            RESOURCE_ID,
+            RESOURCE_NAME,
+            RESOURCE_CODE,
+            RESOURCE_URL,
+            RESOURCE_ICON,
+            PARENT_ID,
+            MODULE_ID,
+            IS_ENABLE,
+            IS_SHOW,
+            RESOURCE_ORDER,
+            RESOURCE_TYPE
+        FROM ADMIN_RESOURCE
+        WHERE PARENT_ID = #{parentId}
+        ORDER BY RESOURCE_ORDER, RESOURCE_ID
+    </select>
+
+    <!--获取指定角色的资源id集合-->
+    <select id="queryResourceIdsByRole" parameterType="Long" resultType="Long">
+        SELECT RESOURCE_ID
+        FROM ADMIN_ROLE_RESOURCE
+        WHERE ROLE_ID = #{roleId, jdbcType=INTEGER}
+    </select>
+
+    <!--获取父资源id集合-->
+    <select id="queryParentIdList" parameterType="java.util.List" resultType="Long">
+        SELECT PARENT_ID FROM ADMIN_RESOURCE
+        WHERE RESOURCE_ID IN
+        <foreach collection="resourceIds" index="index" item="resourceId" open="(" separator="," close=")">
+            #{resourceId,jdbcType=BIGINT}
+        </foreach>
+        GROUP BY PARENT_ID
+    </select>
+
+    <select id="getTemplateByResourceName" parameterType="java.lang.String"
+            resultType="com.bee.devops.admin.core.common.entity.admin.AdminResource">
+        SELECT *
+        FROM ADMIN_RESOURCE
+        WHERE RESOURCE_ID =
+              (SELECT MIN(RESOURCE_ID)
+               FROM ADMIN_RESOURCE
+               WHERE RESOURCE_NAME = #{resourceName})
+    </select>
+
+    <!--批量新增资源-->
+    <insert id="batchAddResources">
+        INSERT INTO ADMIN_RESOURCE (RESOURCE_NAME, RESOURCE_CODE, RESOURCE_URL, RESOURCE_ICON, PARENT_ID, MODULE_ID,
+        IS_ENABLE, IS_SHOW, RESOURCE_ORDER, RESOURCE_TYPE) VALUES
+        <foreach item="item" collection="list" separator=",">
+            (#{item.resourceName},#{item.resourceCode},#{item.resourceUrl},#{item.resourceIcon},#{item.parentId},#{item.moduleId},#{item.isEnable},#{item.isShow},#{item.resourceOrder},#{item.resourceType})
+        </foreach>
+    </insert>
+
+    <!--获取当前登录用户在指定模块下的资源列表-->
+    <select id="getResourcesOnModule" resultMap="BaseResultMap">
+        SELECT DISTINCT
+        <include refid="BASE_COLUMN"/>
+        FROM
+        ADMIN_RESOURCE AR
+        INNER JOIN ADMIN_ROLE_RESOURCE ARR ON ARR.RESOURCE_ID = AR.RESOURCE_ID
+        INNER JOIN ADMIN_USER_ROLE AUR ON AUR.ROLE_ID = ARR.ROLE_ID
+        WHERE AUR.USER_ID = #{userId} AND AR.MODULE_ID = #{moduleId} AND AR.IS_ENABLE = 1
+    </select>
+
+    <!--新增<资源-接口>关系-->
+    <insert id="insertResourceUri">
+        INSERT INTO ADMIN_RESOURCE_INTERFACE(RESOURCE_ID, INTERFACE_ID) VALUES
+        <foreach collection="interfaceIds" item="item" index="index" separator=",">
+            ( #{resourceId,jdbcType=BIGINT}, #{item,jdbcType=BIGINT})
+        </foreach>
+    </insert>
+
+    <!--从资源接口关联表中删除指定资源的所有接口-->
+    <delete id="deleteResourceUri" parameterType="Long">
+        DELETE FROM ADMIN_RESOURCE_INTERFACE
+        WHERE RESOURCE_ID = #{resourceId, jdbcType=BIGINT}
+    </delete>
+
+    <!--根据模块id删除该模块下的所有资源-->
+    <delete id="deleteResourceWithModule" parameterType="Long">
+        DELETE FROM ADMIN_RESOURCE
+        WHERE MODULE_ID = #{moduleId, jdbcType=BIGINT}
+    </delete>
+
+    <!--根据模块id获取该模块下的所有资源-->
+    <select id="getResourceIdsByModuleId" parameterType="Long" resultType="Long">
+        SELECT RESOURCE_ID
+        FROM ADMIN_RESOURCE
+        WHERE MODULE_ID = #{moduleId}
+    </select>
+
+</mapper>

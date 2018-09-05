@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseEnvServerDao">
+    <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsBaseEnvServer">
+        <id column="HOST_APPENV_ID" jdbcType="BIGINT" property="hostAppEnvId" />
+        <result column="HOST_ID" jdbcType="BIGINT" property="hostId" />
+        <result column="APP_ENV_ID" jdbcType="BIGINT" property="appEnvId" />
+        <result column="APP_STATUS" jdbcType="VARCHAR" property="appRunningStatus" />
+    </resultMap>
+
+    <resultMap id="AssociationResultMap" type="com.bee.devops.admin.core.vo.response.OpsDepAppOrderInfoVo">
+        <result column="HOST_ID" jdbcType="BIGINT" property="serverId"/>
+        <result column="APP_STATUS" jdbcType="VARCHAR" property="runStatus"/>
+        <result column="VERSION_CODE" jdbcType="VARCHAR" property="lastSuccessVersion"/>
+        <association property="serverName" column="HOST_ID" select="getServerNameByServerId"/>
+        <association property="sshAddress" column="HOST_ID" select="com.bee.devops.admin.core.common.dao.ops.OpsBaseServerDao.selectSSH"/>
+    </resultMap>
+
+    <select id="queryRunAndStopStatus" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT HOST_APPENV_ID, HOST_ID, APP_ENV_ID, APP_STATUS
+        FROM OPS_BASE_ENV_SERVER
+        WHERE APP_STATUS != #{deployingStatus,jdbcType=INTEGER}
+    </select>
+
+    <update id="updateAppStatus">
+        UPDATE OPS_BASE_ENV_SERVER SET APP_STATUS = #{status,jdbcType=INTEGER}
+        WHERE HOST_APPENV_ID=#{hostAppEnvId,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateAppStatusByHostAndAppEnvId">
+        UPDATE OPS_BASE_ENV_SERVER SET APP_STATUS = #{status,jdbcType=INTEGER}
+        WHERE HOST_ID=#{hostId,jdbcType=BIGINT} AND APP_ENV_ID=#{appEnvId,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateVersionCodeByHostAndAppEnvId">
+        UPDATE OPS_BASE_ENV_SERVER SET VERSION_CODE = #{versionCode,jdbcType=VARCHAR}
+        WHERE HOST_ID=#{hostId,jdbcType=BIGINT} AND APP_ENV_ID=#{appEnvId,jdbcType=BIGINT}
+    </update>
+
+    <select id="searchRunningStatusByEnvAppId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT HOST_APPENV_ID,HOST_ID,APP_STATUS
+        FROM OPS_BASE_ENV_SERVER
+        WHERE APP_ENV_ID=#{appEnvId,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryLastSuccessVersion" resultType="java.lang.String">
+        SELECT VERSION_CODE FROM OPS_BASE_ENV_SERVER
+        WHERE HOST_ID=#{hostId,jdbcType=BIGINT} AND APP_ENV_ID=#{appEnvId,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryEnvServersByAppEnvId" parameterType="java.lang.Long" resultMap="AssociationResultMap">
+        SELECT HOST_ID,APP_ENV_ID,APP_STATUS,VERSION_CODE
+        FROM OPS_BASE_ENV_SERVER WHERE APP_ENV_ID=#{appEnvId,jdbcType=BIGINT}
+    </select>
+
+    <select id="getServerNameByServerId" resultType="java.lang.String">
+        SELECT ASSETS_NAME FROM OPS_BASE_SERVER  WHERE ASSETS_ID = #{hostId,jdbcType=INTEGER}
+    </select>
+
+    <select id="getApplicationRunningStatus" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT APP_STATUS FROM OPS_BASE_ENV_SERVER WHERE HOST_APPENV_ID=#{hostAppEnvId,jdbcType=BIGINT}
+    </select>
+</mapper>

@@ -1,0 +1,30 @@
+server:
+  port: 18001
+
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://192.168.100.130:32000/E08P00_G0_ADMIN?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: 1q2w3e4r..
+  devtools:
+    restart.enabled: true
+    livereload.enabled: true
+  http:
+    multipart:
+      max-file-size: 200mb
+      max-request-size: 300mb
+  
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.bee.devops.admin.core.common.entity.*
+  check-config-location: true
+  config-location: classpath:mybatis-config.xml
+
+security.basic.enabled: false
+management.security.enabled: false
+
+wss:
+    server:
+        host: 127.0.0.1
+        port: 18003

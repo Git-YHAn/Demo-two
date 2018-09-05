@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bee.devops.admin.core.common.dao.ops.OpsBaseEnvDao">
+  <resultMap id="BaseResultMap" type="com.bee.devops.admin.core.common.entity.ops.OpsBaseEnv">
+    <id column="ENV_ID" jdbcType="BIGINT" property="envId" />
+    <result column="ENV_NAME" jdbcType="VARCHAR" property="envName" />
+    <result column="ENV_CODE" jdbcType="VARCHAR" property="envCode" />
+    <result column="PRIORITY" jdbcType="INTEGER" property="priority" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    ENV_ID, ENV_NAME, ENV_CODE, PRIORITY, DESCRIPTION, CREATE_TIME, UPDATE_TIME
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from OPS_BASE_ENV
+    where ENV_ID = #{envId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from OPS_BASE_ENV
+    where ENV_ID = #{envId,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseEnv">
+    insert into OPS_BASE_ENV (ENV_NAME, ENV_CODE, PRIORITY,DESCRIPTION )
+    values ( #{envName,jdbcType=VARCHAR}, #{envCode,jdbcType=VARCHAR}, #{priority},#{description,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseEnv">
+    insert into OPS_BASE_ENV
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{envId,jdbcType=INTEGER},
+      </if>
+      <if test="envName != null">
+        #{envName,jdbcType=VARCHAR},
+      </if>
+      <if test="envCode != null">
+        #{envCode,jdbcType=VARCHAR},
+      </if>
+      <if test="priority != null">
+        #{priority,jdbcType=INTEGER},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseEnv">
+    update OPS_BASE_ENV
+    <set>
+      <if test="envName != null and envName !='' ">
+        ENV_NAME = #{envName,jdbcType=VARCHAR},
+      </if>
+      <if test="priority != null and priority !='' ">
+        PRIORITY = #{priority,jdbcType=INTEGER},
+      </if>
+      <if test="description != null ">
+        DESCRIPTION = #{description,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ENV_ID = #{envId,jdbcType=INTEGER}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.bee.devops.admin.core.common.entity.ops.OpsBaseEnv">
+    update OPS_BASE_ENV
+    <set>
+	    <if test="envName != null and envName !='' ">
+	     	ENV_NAME = #{envName,jdbcType=VARCHAR},
+	    </if>
+	    <if test="priority != null and priority !='' ">
+	      	PRIORITY = #{priority,jdbcType=INTEGER},
+	    </if>
+	    <if test="envCode != null and envCode != '' ">
+	   		ENV_CODE = #{envCode,jdbcType=VARCHAR},
+	    </if>
+	    <if test="description != null ">
+	     	DESCRIPTION = #{description,jdbcType=VARCHAR},
+	    </if>
+    </set>
+    where ENV_ID = #{envId,jdbcType=INTEGER}
+  </update>
+
+  <select id="selectAll" resultMap="BaseResultMap" >
+  	select
+    <include refid="Base_Column_List" />
+    from OPS_BASE_ENV order by UPDATE_TIME DESC , CREATE_TIME DESC
+  </select>
+
+  <select id="selectByCode" resultType="int">
+  select COUNT(*)
+  from OPS_BASE_ENV
+  where ENV_CODE = #{envCode}
+  </select>
+
+  <select id="selectByPriority" resultType="int">
+  select COUNT(*)
+  from OPS_BASE_ENV
+  where PRIORITY = #{priority}
+  </select>
+
+  <select id="selectAllByName" resultMap="BaseResultMap">
+  	select
+   <include refid="Base_Column_List" />
+  from OPS_BASE_ENV
+  <if test="envName != null and envName != ''">
+  where ENV_NAME like "%"#{envName}"%"
+  </if>
+  order by UPDATE_TIME DESC , CREATE_TIME DESC
+  </select>
+
+  <select id="selectPriorityById" resultType="int">
+  	select PRIORITY from OPS_BASE_ENV where ENV_ID = #{envId}
+  </select>
+
+  <select id="selectEnvByPriority" resultMap="BaseResultMap">
+  	select
+  	<include refid="Base_Column_List" />
+  	from OPS_BASE_ENV WHERE #{priority} > PRIORITY order by UPDATE_TIME DESC , CREATE_TIME DESC
+  </select>
+
+  <select id="selectByAppVer" resultMap="BaseResultMap">
+  	SELECT DISTINCT OBE.ENV_ID, OBE.ENV_NAME, OBE.ENV_CODE, OBE.PRIORITY,
+	OBE.DESCRIPTION, OBE.CREATE_TIME, OBE.UPDATE_TIME
+	FROM OPS_BASE_ENV OBE
+	order by UPDATE_TIME DESC , CREATE_TIME DESC
+  </select>
+
+</mapper>
